@@ -4,12 +4,46 @@ clear;
 %% Load Configuration
 cfg = config();
 
-%% Check if running in CI environment
+%% Check if running in CI environment or headless mode
 isCI = strcmpi(getenv('CI'), 'true');
-doPlot = ~isCI;
+isTest = strcmpi(getenv('MATLAB_TEST'), 'true');
 
-%%
-addpath("distmesh/")
+% Completely disable plotting for CI/test environments
+doPlot = ~isCI && ~isTest;
+
+if ~doPlot
+    % Aggressively disable all graphics for tests
+    set(0, 'DefaultFigureVisible', 'off');
+    fprintf('Plotting completely disabled for testing/CI\n');
+    hasDisplay = false;
+else
+    % Only check display if we might want to plot
+    try
+        % Try to create a figure to test if display is available
+        f = figure('Visible', 'off');
+        close(f);
+        hasDisplay = true;
+    catch
+        hasDisplay = false;
+        doPlot = false;
+    end
+end
+
+%% Set random seed for DistMesh reproducibility (DistMesh uses rand() for rejection method)
+if isfield(cfg.simulation, 'random_seed') && ~isempty(cfg.simulation.random_seed)
+    rng(cfg.simulation.random_seed);
+    fprintf('Random seed set to %d for DistMesh reproducibility\n', cfg.simulation.random_seed);
+end
+
+%% Ensure DistMesh is available
+if ~exist('distmesh2d', 'file')
+    % Try to add distmesh from the standard location
+    if exist('distmesh', 'dir')
+        addpath('distmesh');
+    else
+        error('distmesh directory not found. Please run setup_paths() or add distmesh to your path manually.');
+    end
+end
 
 % Extract domain parameters
 x_min = cfg.domain.x_min;
@@ -30,7 +64,6 @@ b2 = cfg.mesh.refine_b2;
 fd    = @(p) ddiff(drectangle(p,x_min, x_max,y_min,y_max),dcircle(p,0,0,radius));
 fd1   = @(p) min(a1+b1*abs(dcircle(p,0,0,radius)),a2+b2*abs(dpoly(p,[radius 0; x_max 0])));
  
-% rng(100)
 fix    = [x_min,y_min;x_min,y_max; x_max, y_max; x_max, y_min];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

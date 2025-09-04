@@ -5,6 +5,7 @@ classdef TestCylinder < matlab.unittest.TestCase
             
             % Set CI environment variable to ensure short run
             setenv('CI', 'true');
+            setenv('MATLAB_TEST', 'true');
             
             % Set up paths
             setup_paths();

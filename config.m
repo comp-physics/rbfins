@@ -58,7 +58,8 @@ config.simulation.reynolds_number = 100;
 config.simulation.viscosity = 1/config.simulation.reynolds_number;
 config.simulation.time_step = 1e-2;
 config.simulation.num_time_steps = 5000;
-config.simulation.num_time_steps_ci = 20;   % Reduced for CI testing
+config.simulation.num_time_steps_ci = 20;
+config.simulation.random_seed = 42;  % Required for DistMesh reproducibility (uses rand() for rejection method)
 
 %% Distance Thresholds for Special Treatment
 config.distances.x_min = 1;

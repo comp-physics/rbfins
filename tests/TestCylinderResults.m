@@ -5,6 +5,7 @@ classdef TestCylinderResults < matlab.unittest.TestCase
             try
                 % Set up environment
                 setenv('CI', 'true');
+                setenv('MATLAB_TEST', 'true');
                 setup_paths();
                 
                 % Run the simulation in a controlled way
@@ -61,6 +62,7 @@ classdef TestCylinderResults < matlab.unittest.TestCase
             try
                 % Set up environment
                 setenv('CI', 'true');
+                setenv('MATLAB_TEST', 'true');
                 setup_paths();
                 
                 % Run the simulation if it hasn't been run already
@@ -102,6 +104,7 @@ classdef TestCylinderResults < matlab.unittest.TestCase
             try
                 % Set up environment
                 setenv('CI', 'true');
+                setenv('MATLAB_TEST', 'true');
                 setup_paths();
                 
                 % Run the simulation if it hasn't been run already

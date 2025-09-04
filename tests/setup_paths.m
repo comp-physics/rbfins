@@ -5,6 +5,9 @@ function setup_paths()
 % especially when running in CI environments where the working directory
 % might be different.
 
+% Disable all figure visibility for tests
+set(0, 'DefaultFigureVisible', 'off');
+
 % Get the directory where this script is located
 scriptDir = fileparts(mfilename('fullpath'));
 

@@ -66,7 +66,23 @@ This repository includes automated testing using GitHub Actions to ensure the co
    runtests('tests');
    ```
 
-4. **Configuration File Approach**:
+4. **Golden File Testing**:
+   - The test suite includes "golden file" tests that compare current simulation results against a known-accurate reference
+   - This ensures numerical reproducibility and detects unintended changes in simulation behavior
+   - To generate a new golden file (only needed once or when algorithm changes):
+   ```matlab
+   addpath('tests/golden'); make_golden_simple();
+   ```
+   - To run golden tests:
+   ```matlab
+   runtests('tests/TestGolden.m');
+   ```
+   - The golden file test ensures reproducibility by:
+     - Setting a fixed random seed for deterministic mesh generation
+     - Comparing final velocity fields within specified tolerances
+     - Alerting to any changes in numerical results
+
+5. **Configuration File Approach**:
    - All simulation parameters are centralized in `config.m`
    - This makes it easy to modify parameters without changing the main code
    - The configuration file is organized into logical sections:
