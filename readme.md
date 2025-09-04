@@ -4,6 +4,33 @@
 
 This MATLAB code implements a mesh-free method to solve the incompressible Navier-Stokes equations for flow around a cylinder using Polyharmonic Spline Radial Basis Functions (PHS-RBF). The approach uses a staggered grid formulation and a fractional step method for time integration.
 
+### How to Run the Code
+
+1. **Requirements**:
+   - MATLAB (the code has been tested on MATLAB R2019b and newer versions)
+   - No additional toolboxes are required
+
+2. **Running the Simulation**:
+   - Open MATLAB and navigate to the repository directory
+   - Run the main script by typing `cylinder` in the MATLAB command window
+   - Alternatively, open `cylinder.m` in the MATLAB editor and click the "Run" button
+
+3. **What to Expect**:
+   - The script will generate a mesh for the flow domain
+   - Set up the differentiation matrices using RBF-FD
+   - Run the time-stepping loop for 5000 iterations (by default)
+   - Display the final velocity field as scatter plots showing the u and v components
+
+4. **Modifying Simulation Parameters**:
+   - Reynolds number: Look for the variable `nu` in `cylinder.m` (currently set to 1/100)
+   - Time step: Look for the variable `dt` in `cylinder.m` (currently set to 1e-2)
+   - Number of time steps: Look for the variable `Nt` in `cylinder.m` (currently set to 5000)
+   - These parameters are defined in the simulation setup section of the code
+
+5. **Computational Requirements**:
+   - The simulation is computationally intensive and may take time to complete
+   - For a full simulation with 5000 time steps, expect several minutes of computation time depending on your hardware
+
 #### Key Components
 
 ##### 1. Domain and Mesh Generation
