@@ -1,6 +1,9 @@
-
 clc;
 clear;
+
+%% Check if running in CI environment
+isCI = strcmpi(getenv('CI'), 'true');
+doPlot = ~isCI;
 
 %%
 addpath("distmesh/")
@@ -99,26 +102,26 @@ boundary = [boundary_y;boundary_out;boundary_in;boundary_c];
 
 
 %%
-figure;
+if doPlot
+    figure;
 
+    scatter(xy(:,1),xy(:,2),'k.'); hold on; axis square;
+    scatter(boundary_in(:,1),boundary_in(:,2),'b+');
+    scatter(boundary_y(:,1),boundary_y(:,2),'r+');
+    scatter(boundary_out(:,1),boundary_out(:,2),'b+');
+    scatter(boundary_c(:,1),boundary_c(:,2),'m+');
 
-scatter(xy(:,1),xy(:,2),'k.'); hold on; axis square;
-scatter(boundary_in(:,1),boundary_in(:,2),'b+');
-scatter(boundary_y(:,1),boundary_y(:,2),'r+');
-scatter(boundary_out(:,1),boundary_out(:,2),'b+');
-scatter(boundary_c(:,1),boundary_c(:,2),'m+');
+    %
+    % scatter(xy_s(:,1),xy_s(:,2),'r.'); hold on; axis square;
+    % %
+    % scatter(boundary_in_s(:,1),boundary_in_s(:,2),'k*');
+    % %
+    % scatter(boundary_out_s(:,1),boundary_out_s(:,2),'k*');
+    % scatter(boundary_y_s(:,1),boundary_y_s(:,2),'b*');
+    % scatter(boundary_c_s(:,1),boundary_c_s(:,2),'b  .');
 
-%
-% scatter(xy_s(:,1),xy_s(:,2),'r.'); hold on; axis square;
-% %
-% scatter(boundary_in_s(:,1),boundary_in_s(:,2),'k*');
-% %
-% scatter(boundary_out_s(:,1),boundary_out_s(:,2),'k*');
-% scatter(boundary_y_s(:,1),boundary_y_s(:,2),'b*');
-% scatter(boundary_c_s(:,1),boundary_c_s(:,2),'b  .');
-
-axis equal;
-
+    axis equal;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  xy1: V-grid;   xy1_s: P-grid.
@@ -394,6 +397,12 @@ L0(Nearest_Idx_nb,:)  =  D_all_nb{3};
 %
 nu =1/100; dt = 1e-2;
 
+% Set reduced number of time steps for CI environment
+Nt = 5000;
+if isCI
+    Nt = 20; % Keep tests fast in CI
+end
+
 % 
 L = L0;
 L(length(xy)+1:end,:) = zeros(length(boundary),length(xy1));
@@ -433,8 +442,6 @@ U0 = ones(length(xy1),1);
 U0(end-length(boundary_c)+1:end) = zeros(length(boundary_c),1);
 W0 = [U0;V0];
 
-
-Nt = 5000;
 
 W = zeros(length(xy1)*2,Nt+1);
 
@@ -486,53 +493,54 @@ Idx_out_s = length(xy_s)+1+length(boundary_y_s): length(xy_s)+length(boundary_ou
 
 %%
 
+if doPlot
+    figure('Name','1/Re = 1e-2');
 
-figure('Name','1/Re = 1e-2');
+    colormap(jet)
 
- colormap(jet)
+    % for j =1:1:5000
+    j = Nt;
 
-% for j =1:1:5000
-j = Nt;
+    % colormap(bluered)
 
-% colormap(bluered)
+    % j = (j1-1)* 1600 +3;
+    U = W(1:length(xy1),(j-1)*1+1);
+    V = W(length(xy1)+1:end,(j-1)*1+1);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    subplot(2,1,1);
+    scatter(x1,y1,15*ones(length(xy1),1),1*(U-1),'.');
+    axis equal, axis tight, hold on;
+    %     colorbar
+    xlim([x_min x_max]);
+    ylim([y_min y_max]);
+    yticks([-5 0 5])
+    xticks([-5 0 5 10 15])
+    title(['u']);
+    ylabel('y');
+    xlabel('x');
+    shading interp;
+    caxis([-1e-0 1e-0]);
 
-% j = (j1-1)* 1600 +3;
-U = W(1:length(xy1),(j-1)*1+1);
-V = W(length(xy1)+1:end,(j-1)*1+1);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subplot(2,1,1);
-scatter(x1,y1,15*ones(length(xy1),1),1*(U-1),'.');
-axis equal, axis tight, hold on;
-%     colorbar
-xlim([x_min x_max]);
-ylim([y_min y_max]);
-yticks([-5 0 5])
-xticks([-5 0 5 10 15])
-title(['u']);
-ylabel('y');
-xlabel('x');
-shading interp;
-caxis([-1e-0 1e-0]);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    subplot(2,1,2);
+    scatter(x1,y1,15*ones(length(xy1),1),1*V,'.');
+    axis equal, axis tight, hold on;
+    %     colorbar
+    shading interp;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subplot(2,1,2);
-scatter(x1,y1,15*ones(length(xy1),1),1*V,'.');
-axis equal, axis tight, hold on;
-%     colorbar
-shading interp;
+    xlim([x_min x_max]);
+    ylim([y_min y_max]);
+    yticks([-5 0 5])
+    xticks([-5 0 5 10 15])
+    title(['v' ]);
 
-xlim([x_min x_max]);
-ylim([y_min y_max]);
-yticks([-5 0 5])
-xticks([-5 0 5 10 15])
-title(['v' ]);
+    xlabel('x');
+    ylabel('y');
+    set(gca,'Ytick',[]);
+    caxis([-1e-0 1e-0]);
 
-xlabel('x');
-ylabel('y');
-set(gca,'Ytick',[]);
-caxis([-1e-0 1e-0]);
-
-drawnow;
+    drawnow;
+end
     
   % end
 

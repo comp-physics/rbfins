@@ -31,6 +31,31 @@ This MATLAB code implements a mesh-free method to solve the incompressible Navie
    - The simulation is computationally intensive and may take time to complete
    - For a full simulation with 5000 time steps, expect several minutes of computation time depending on your hardware
 
+### Testing with GitHub Actions
+
+This repository includes automated testing using GitHub Actions to ensure the code runs correctly across different environments.
+
+1. **Test Configuration**:
+   - Tests are defined in the `tests/TestCylinder.m` file using MATLAB's unit testing framework
+   - The GitHub Actions workflow is configured in `.github/workflows/matlab.yml`
+   - In CI environments, the simulation runs with a reduced number of time steps (20 instead of 5000)
+
+2. **What the Tests Verify**:
+   - Basic smoke test to ensure the code runs without errors
+   - Verification of output dimensions and data integrity
+   - Confirmation that boundary conditions are properly enforced
+   - No NaN or Inf values in the solution
+
+3. **Running Tests Locally**:
+   - You can run the tests locally using MATLAB's test framework:
+   ```matlab
+   runtests('tests')
+   ```
+
+4. **Adding New Tests**:
+   - Additional tests can be added to the `tests/TestCylinder.m` file
+   - Follow MATLAB's unit testing framework conventions for new test methods
+
 #### Key Components
 
 ##### 1. Domain and Mesh Generation
