@@ -12,7 +12,12 @@ scriptDir = fileparts(mfilename('fullpath'));
 addpath(fullfile(scriptDir, '..'));
 
 % Add the distmesh directory to the path
-addpath(fullfile(scriptDir, '..', 'distmesh'));
+distmeshPath = fullfile(scriptDir, '..', 'distmesh');
+if exist(distmeshPath, 'dir')
+    addpath(distmeshPath);
+else
+    fprintf('Warning: distmesh directory not found at %s\n', distmeshPath);
+end
 
 % Print the current path for debugging
 fprintf('MATLAB path set up for tests\n');
