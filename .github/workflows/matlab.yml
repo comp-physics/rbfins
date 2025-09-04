@@ -10,6 +10,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]  # add macos-latest, windows-latest if desired
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15  # Add timeout to prevent hanging tests
 
     steps:
       - name: Checkout
@@ -17,6 +18,13 @@ jobs:
 
       - name: Setup MATLAB
         uses: matlab-actions/setup-matlab@v2
+        
+      - name: Verify directory structure
+        run: |
+          echo "Checking directory structure..."
+          ls -la
+          echo "Checking distmesh directory..."
+          ls -la distmesh || echo "distmesh directory not found"
 
       - name: Run MATLAB unit tests
         uses: matlab-actions/run-tests@v2
