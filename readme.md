@@ -31,6 +31,13 @@ This MATLAB code implements a mesh-free method to solve the incompressible Navie
      - Cylinder radius: `config.mesh.cylinder_radius` (default: 0.5)
      - RBF parameters: Various stencil sizes and polynomial degrees
    - **To modify parameters**: Edit the values in `config.m` - no need to touch the main code
+   - **Configuration Structure**:
+     - `config.domain`: Domain boundaries and dimensions
+     - `config.mesh`: Mesh generation parameters
+     - `config.rbf`: RBF-FD algorithm parameters
+     - `config.simulation`: Time stepping and physics parameters
+     - `config.schemes`: Numerical scheme coefficients
+     - `config.visualization`: Plot settings and visualization parameters
 
 5. **Computational Requirements**:
    - The simulation is computationally intensive and may take time to complete
@@ -47,17 +54,30 @@ This repository includes automated testing using GitHub Actions to ensure the co
 
 2. **What the Tests Verify**:
    - Basic smoke test to ensure the code runs without errors
-   - Verification of output dimensions and data integrity
-   - Confirmation that boundary conditions are properly enforced
-   - No NaN or Inf values in the solution
+   - Verification that the configuration file contains all required parameters
+   - Confirmation that magic numbers have been properly replaced with configuration parameters
+   - Validation that the main script correctly uses the configuration file
 
 3. **Running Tests Locally**:
    - You can run the tests locally using MATLAB's test framework:
    ```matlab
-   runtests('tests')
+   addpath('tests');
+   setup_paths(); % This adds the necessary paths
+   runtests('tests');
    ```
 
-4. **Adding New Tests**:
+4. **Configuration File Approach**:
+   - All simulation parameters are centralized in `config.m`
+   - This makes it easy to modify parameters without changing the main code
+   - The configuration file is organized into logical sections:
+     - `domain`: Domain boundaries and dimensions
+     - `mesh`: Mesh generation parameters
+     - `rbf`: RBF-FD algorithm parameters
+     - `simulation`: Time stepping and physics parameters
+     - `schemes`: Numerical scheme coefficients
+     - `visualization`: Plot settings and visualization parameters
+
+5. **Adding New Tests**:
    - Additional tests can be added to the `tests/TestCylinder.m` file
    - Follow MATLAB's unit testing framework conventions for new test methods
 

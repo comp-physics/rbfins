@@ -23,6 +23,7 @@ jobs:
         with:
           select-by-folder: tests
           test-results-junit: test-results/results.xml
+          source-folder: .  # Include the root directory in the path
 
       - name: Upload test results
         if: always()
