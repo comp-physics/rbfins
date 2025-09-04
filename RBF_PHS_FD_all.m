@@ -1,16 +1,12 @@
 function [D_all] = RBF_PHS_FD_all(xy1,xy_s,Nearest_Idx,k,m,d)
 
 % RBF_PHS_FD_ALL  RBF-FD-based (PHS+poly) global differentiation matrices
-
-
 %   [D_ALL] = RBF_PHS_FD_ALL(XY1,XY_S,NEAREST_IDX,K,M,D,VARARGIN) returns
 %   the global differentiation matrices from the node set {xy_s} to node set
 %   {xy1}, including Dx, Dy, DL, Dxx, Dyy, Dxy.
 %   NEAREST_IDX is the index matrix return by NEAREST_INTERP.
 %   k is local RBF stencil size, m is the order of PHS-RBF, and d is the
 %   degree of the polynomial Augmentation.
-
-
 %   Reference:
 %     [1] T. Chu, O. T. Schmidt, RBF-FD discretization of the Navier-Stokes 
 %     equations on scattered but staggered nodes,
@@ -19,10 +15,6 @@ function [D_all] = RBF_PHS_FD_all(xy1,xy_s,Nearest_Idx,k,m,d)
 %     Submitted to Journal of Computational Physics
 %
 %   T. Chu (tic173@ucsd.edu), O. T. Schmidt (oschmidt@ucsd.edu)
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 X1            =           xy1(:,1);
 NxNy1         =           length(X1);
@@ -34,8 +26,6 @@ weight_L      =           zeros(NxNy1,k);
 weight_xx     =           zeros(NxNy1,k);
 weight_yy     =           zeros(NxNy1,k);
 weight_xy     =           zeros(NxNy1,k);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
  %%  Local RBF-FDs for each grid   
  
@@ -139,8 +129,6 @@ for m1 = 1:NxNy1
 % A_inv =    V*S*(U');
 % 
 % W = A_inv*L;
-
-
     w = W(1:k,:);      % Extragct the RBF-FD weights
 
     weight_x(m1,1:k)   =  w(:,1)/scale_x;
@@ -158,24 +146,16 @@ for m1 = 1:NxNy1
         
             
 end
-
-
 %%  Assigning RBF-FD weights to global matrices
-
-
 Idx_x                                 =       reshape((1:NxNy1).*ones(k,1),1,[]);
 
 Idx_y                                 =       reshape(Nearest_Idx(:,1:k)',1,[]);
-
-
 Wx                                    =       reshape(weight_x',1,[]);
 Wy                                    =       reshape(weight_y',1,[]);
 WL                                    =       reshape(weight_L',1,[]);
 Wxx                                   =       reshape(weight_xx',1,[]);
 Wyy                                   =       reshape(weight_yy',1,[]);
 Wxy                                   =       reshape(weight_xy',1,[]);
-
-
 Dx                                    =       sparse(Idx_x,Idx_y,Wx,NxNy1,NxNy2);
 Dy                                    =       sparse(Idx_x,Idx_y,Wy,NxNy1,NxNy2);
 L                                     =       sparse(Idx_x,Idx_y,WL,NxNy1,NxNy2);
@@ -184,6 +164,4 @@ Dyy                                   =       sparse(Idx_x,Idx_y,Wyy,NxNy1,NxNy2
 Dxy                                   =       sparse(Idx_x,Idx_y,Wxy,NxNy1,NxNy2);
 
 D_all                                 =       {Dx,Dy,L,Dxx,Dyy,Dxy};
-
-
 end

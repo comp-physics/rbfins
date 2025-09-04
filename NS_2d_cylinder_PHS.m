@@ -17,7 +17,7 @@ V_1    =  W1(L_W2/2+1:end);
 % U0    =  W0(1:L_W2/2);
 % V0    =  W0(L_W2/2+1:end);
   
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %% advection: adams-bashforth method
 
@@ -46,8 +46,6 @@ U1(L_W+1:L_W+L_B_y) = -(Dy_b*U1)./Dy_b_1;
  V1(end-L_B+1:end-0) = V(end-L_B+1:end-0);
 %  
 %  
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% viscousity: Crank-Nicolson
 
 % 
@@ -72,8 +70,6 @@ V2(L_W+1:L_W+L_B_y) =  zeros(L_B_y,1);
 
 U2   =  L_u_inv(U2);
 V2   =  L_v_inv(V2);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% pressure correction 
 
    F0    =  (D0_12_x*(U2-0)+D0_12_y*(V2-0));
@@ -85,7 +81,7 @@ V2   =  L_v_inv(V2);
   p = p(1:(length(F0)+L_B_S));  % regularization
   F = F(1:(length(F0)+L_B_S));  % regularization
   
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
     U3   =   (U2-0) -  [(D0_21_x*p ); zeros(L_B,1)];
     
@@ -100,8 +96,6 @@ V3(L_W+1:L_W+L_B_y) = V(L_W+1:L_W+L_B_y);
 V3(end-L_B+1:end)   = V(end-L_B+1:end);
    
 % V3(L_W+1:end) = V(L_W+1:end);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% velocities at the following time-step
 

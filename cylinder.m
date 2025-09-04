@@ -1,10 +1,10 @@
 clc;
 clear;
 
-%% Load Configuration
+% Load Configuration
 cfg = config();
 
-%% Check if running in CI environment or headless mode
+% Check if running in CI environment or headless mode
 isCI = strcmpi(getenv('CI'), 'true');
 isTest = strcmpi(getenv('MATLAB_TEST'), 'true');
 
@@ -29,13 +29,13 @@ else
     end
 end
 
-%% Set random seed for DistMesh reproducibility (DistMesh uses rand() for rejection method)
+% Set random seed for DistMesh reproducibility (DistMesh uses rand() for rejection method)
 if isfield(cfg.simulation, 'random_seed') && ~isempty(cfg.simulation.random_seed)
     rng(cfg.simulation.random_seed);
     fprintf('Random seed set to %d for DistMesh reproducibility\n', cfg.simulation.random_seed);
 end
 
-%% Ensure DistMesh is available
+% Ensure DistMesh is available
 if ~exist('distmesh2d', 'file')
     % Try to add distmesh from the standard location
     if exist('distmesh', 'dir')
@@ -66,8 +66,7 @@ fd1   = @(p) min(a1+b1*abs(dcircle(p,0,0,radius)),a2+b2*abs(dpoly(p,[radius 0; x
  
 fix    = [x_min,y_min;x_min,y_max; x_max, y_max; x_max, y_min];
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% generate nodes using distmesh
+% Generate nodes using DistMesh
 [xy_s,xt] = distmesh2d(fd,fd1,dist, [x_min,y_min; x_max, y_max],fix );
 
 nodes ={xy_s,xt};
@@ -76,14 +75,13 @@ xy_s = nodes{1}; xt = nodes{2};
 
 xy = zeros(length(xt)*cfg.mesh.edge_multiplier,2);
 for j = 1:length(xt)
-    xy((j-1)*cfg.mesh.edge_multiplier+1,:)   =  (xy_s(xt(j,1),:)+xy_s(xt(j,2),:))/2;
-    xy((j-1)*cfg.mesh.edge_multiplier+2,:)   =  (xy_s(xt(j,1),:)+xy_s(xt(j,3),:))/2;
-    xy((j-1)*cfg.mesh.edge_multiplier+3,:)   =  (xy_s(xt(j,2),:)+xy_s(xt(j,3),:))/2;
+    xy((j-1)*cfg.mesh.edge_multiplier+1,:) = (xy_s(xt(j,1),:)+xy_s(xt(j,2),:))/2;
+    xy((j-1)*cfg.mesh.edge_multiplier+2,:) = (xy_s(xt(j,1),:)+xy_s(xt(j,3),:))/2;
+    xy((j-1)*cfg.mesh.edge_multiplier+3,:) = (xy_s(xt(j,2),:)+xy_s(xt(j,3),:))/2;
 end
 xy = unique(xy,'rows');
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  determine boundary nodes
+% Determine boundary nodes
 idx_corners =  (xy_s(:,1)<x_min+eps & xy_s(:,2)<y_min+eps) | (xy_s(:,1)<x_min+eps & xy_s(:,2)>y_max-eps)  |  (xy_s(:,1)>x_max-eps & xy_s(:,2)>y_max-eps)  | (xy_s(:,1)>x_max-eps & xy_s(:,2)<y_min+eps) ;
 xy_s(idx_corners,:)= [];
 idx_b_in = xy_s(:,1)<x_min+eps;
@@ -102,8 +100,8 @@ xy_s(idx_b_c,:)=[];
 
 boundary_s = [boundary_y_s;boundary_out_s;boundary_in_s;boundary_c_s];
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-idx_b_in = xy(:,1)<x_min+eps  ;
+% Process boundary nodes for velocity grid
+idx_b_in = xy(:,1)<x_min+eps;
 boundary_in = xy(idx_b_in,:);
 xy(idx_b_in,:)=[];
 idx_b_y =  xy(:,2)>y_max-eps | xy(:,2)<y_min+eps ;
@@ -119,7 +117,6 @@ xy(idx_b_c,:)=[];
 
 boundary = [boundary_y;boundary_out;boundary_in;boundary_c];
 
-%%
 if doPlot
     figure;
 
@@ -132,18 +129,17 @@ if doPlot
     axis equal;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  xy1: V-grid;   xy1_s: P-grid.
-xy1      =  [xy;boundary];
-xy1_s      =  [xy_s;boundary_s];
-x1   =   xy1(:,1);
-y1   =   xy1(:,2);
-x1_s   =   xy1_s(:,1);
-y1_s   =   xy1_s(:,2);
-x0   =   xy(:,1);
-y0   =   xy(:,2);
-x0_s   =   xy_s(:,1);
-y0_s   =   xy_s(:,2);
+% Combine interior and boundary nodes: xy1 (V-grid), xy1_s (P-grid)
+xy1 = [xy; boundary];
+xy1_s = [xy_s; boundary_s];
+x1 = xy1(:,1);
+y1 = xy1(:,2);
+x1_s = xy1_s(:,1);
+y1_s = xy1_s(:,2);
+x0 = xy(:,1);
+y0 = xy(:,2);
+x0_s = xy_s(:,1);
+y0_s = xy_s(:,2);
 
 x_min_dist = cfg.distances.x_min;
 x_max_dist = cfg.distances.x_max;
@@ -151,8 +147,7 @@ y_min_dist = cfg.distances.y_min;
 y_max_dist = cfg.distances.y_max;
 r_dist     = a2*cfg.mesh.edge_multiplier;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%  determine local stencils
+%% Determine local stencils
 k = cfg.rbf.stencil_size_main;
 [Nearest_Idx] = nearest_interp(xy1,xy1,k);
 
@@ -188,31 +183,31 @@ Nearest_Idx_b_x = [(length(xy_s)+1+length(boundary_y_s):length(xy_s)+length(boun
 D = RBF_PHS_FD_all(boundary_out_s,xy1_s,Nearest_Idx_b_x, cfg.rbf.order_boundary,cfg.rbf.poly_degree_boundary, cfg.rbf.derivative_order);
 Dx_out_s = D{1};
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-L_bc_c  =  zeros(length(boundary_s),length(xy1_s));
-Idx_boundary_c  =  length(xy1_s)-length(boundary_c_s)+[1:length(boundary_c_s)];
-L_bc_c(Idx_boundary_c-length(xy_s),:)  =  Dn1_b_s;
+% Cylinder boundary conditions
+L_bc_c = zeros(length(boundary_s), length(xy1_s));
+Idx_boundary_c = length(xy1_s)-length(boundary_c_s)+[1:length(boundary_c_s)];
+L_bc_c(Idx_boundary_c-length(xy_s),:) = Dn1_b_s;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-L_bc_out                                     =      zeros(length(boundary_s),length(xy1_s));
-Idx_boundary_out                             =      length(xy_s)+length(boundary_y_s)+[1:length(boundary_out_s)];
-L_bc_out(Idx_boundary_out-length(xy_s),:)    =  Dx_out_s;
+% Outlet boundary conditions  
+L_bc_out = zeros(length(boundary_s), length(xy1_s));
+Idx_boundary_out = length(xy_s) + length(boundary_y_s) + [1:length(boundary_out_s)];
+L_bc_out(Idx_boundary_out-length(xy_s),:) = Dx_out_s;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-L_bc_y  =  zeros(length(boundary_s),length(xy1_s));
-Idx_boundary_y  =  length(xy_s)+[1:length(boundary_y_s)];
-L_bc_y(Idx_boundary_y-length(xy_s),:)  =  Dy_b_s;
+% Wall boundary conditions
+L_bc_y = zeros(length(boundary_s), length(xy1_s));
+Idx_boundary_y = length(xy_s) + [1:length(boundary_y_s)];
+L_bc_y(Idx_boundary_y-length(xy_s),:) = Dy_b_s;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-L_bc_in  =  zeros(length(boundary_s),length(xy1_s));
-Idx_boundary_in  =  length(xy1_s)-length(boundary_c_s)-length(boundary_in_s)+[1:length(boundary_in_s)];
-L_bc_in(Idx_boundary_in-length(xy_s),:)  =  Dx_in_s;
+% Inlet boundary conditions
+L_bc_in = zeros(length(boundary_s), length(xy1_s));
+Idx_boundary_in = length(xy1_s) - length(boundary_c_s) - length(boundary_in_s) + [1:length(boundary_in_s)];
+L_bc_in(Idx_boundary_in-length(xy_s),:) = Dx_in_s;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-L1      = [L_s(1:length(xy_s),:);L_bc_c+L_bc_out+L_bc_y+L_bc_in];
+% Assemble pressure system matrix
+L1 = [L_s(1:length(xy_s),:); L_bc_c+L_bc_out+L_bc_y+L_bc_in];
 
-% regularization
-L1      =  [L1 [ones(length(xy_s),1) ; zeros(length(boundary_s),1)]; [ones(1,length(xy_s)) zeros(1,length(boundary_s))] 0];
+% Add regularization for pressure system
+L1 = [L1 [ones(length(xy_s),1); zeros(length(boundary_s),1)]; [ones(1,length(xy_s)) zeros(1,length(boundary_s))] 0];
 
 [LL,UU,pp,qq,rr]    = lu(L1);
 L_inv_s = @(v) (qq*(UU\(LL\(pp*(rr\(v))))));
@@ -244,8 +239,7 @@ xy_nc = xy1(Nearest_Idx_nc,:);
 D0_21_x(Nearest_Idx_nc,:) =  D0_21_all_nc{1};
 D0_21_y(Nearest_Idx_nc,:) =  D0_21_all_nc{2};
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%   differentiation : V-grid to P-grid
+% Differentiation operators: V-grid to P-grid
 [Nearest_Idx_interp] = nearest_interp(xy_s,xy1,cfg.rbf.stencil_size_boundary_outlet);
 
 % low-order PHS-RBFs and polynomials near boundaries
@@ -266,14 +260,13 @@ D0_12_all_nc = RBF_PHS_FD_all(xy_nc,xy1,Nearest_Idx_interp(Nearest_Idx_nc,:),cfg
 D0_12_x(Nearest_Idx_nc,:)  =  D0_12_all_nc{1};
 D0_12_y(Nearest_Idx_nc,:)  =  D0_12_all_nc{2};
 
-%%   B.C.s for V-grid
+%   B.C.s for V-grid
 [Nearest_Idx_b_y] = nearest_interp(boundary_y,xy,cfg.rbf.stencil_size_boundary_cylinder);
 Nearest_Idx_b_y = [(length(xy)+1:length(xy)+length(boundary_y))' Nearest_Idx_b_y];
 
 D = RBF_PHS_FD_all(boundary_y,xy1,Nearest_Idx_b_y,cfg.rbf.order_boundary,cfg.rbf.poly_degree_boundary,cfg.rbf.derivative_order);
 Dy_b_0 = D{2};
 
-% 
 Dy_b = Dy_b_0;
 Dy_b_1 = diag(Dy_b(:,Nearest_Idx_b_y(:,1)));
 Dy_b(:,Nearest_Idx_b_y(:,1)) = zeros(length(boundary_y),length(boundary_y));
@@ -288,7 +281,6 @@ Dx_b = Dx_b_0;
 Dx_b_1 = diag(Dx_b(:,Nearest_Idx_b_out(:,1)));
 Dx_b(:,Nearest_Idx_b_out(:,1)) = zeros(length(boundary_out),length(boundary_out));
 
-%%
 D_all = RBF_PHS_FD_all(xy1,xy1,Nearest_Idx,cfg.rbf.order_main,cfg.rbf.poly_degree_main,cfg.rbf.laplacian_order);
 
 Dx = D_all{1};
@@ -319,9 +311,7 @@ Dx(Nearest_Idx_nb,:)  =  D_all_nb{1};
 Dy(Nearest_Idx_nb,:)  =  D_all_nb{2};
 L0(Nearest_Idx_nb,:)  =  D_all_nb{3};
 
-%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % implicit viscosity: Crank-Nicolson
+%% Time-stepping parameters
 nu = cfg.simulation.viscosity;
 dt = cfg.simulation.time_step;
 
@@ -353,12 +343,11 @@ L_v_inv = @(v) (qq*(UU\(LL\(pp*(rr\(v))))));
 
 clear L_u L_v
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% simulation
-V0 = zeros(length(xy1),1);
-U0 = ones(length(xy1),1);
-U0(end-length(boundary_c)+1:end) = zeros(length(boundary_c),1);
-W0 = [U0;V0];
+%% Initialize simulation
+V0 = zeros(length(xy1),1);  % Initial v-velocity
+U0 = ones(length(xy1),1);   % Initial u-velocity
+U0(end-length(boundary_c)+1:end) = zeros(length(boundary_c),1);  % Zero on cylinder
+W0 = [U0; V0];  % Combined velocity vector
 
 W = zeros(length(xy1)*2,Nt+1);
 W(:,1) = W0;
@@ -374,7 +363,6 @@ Idx_y_s = length(xy_s)+1: length(xy_s)+length(boundary_y_s);
 Idx_in_s = length(xy1_s)+1-length(boundary_c_s)-length(boundary_in_s): length(xy1_s)-length(boundary_c_s);
 Idx_out_s = length(xy_s)+1+length(boundary_y_s): length(xy_s)+length(boundary_out_s)+length(boundary_y_s);
 
-% for j1 = 1:15
 W = zeros(length(xy1)*2,Nt+1);
 W(:,1) = W0;
 
@@ -392,9 +380,7 @@ for j = 1 :Nt
 end
 
 W0 = W(:,end);
-% end
 
-%%
 if doPlot
     figure('Name','1/Re = 1e-2');
     colormap(jet)
@@ -403,7 +389,7 @@ if doPlot
     U = W(1:length(xy1),(j-1)*1+1);
     V = W(length(xy1)+1:end,(j-1)*1+1);
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Plot u-velocity field
     subplot(2,1,1);
     scatter(x1,y1,cfg.visualization.scatter_size*ones(length(xy1),1),1*(U-1),'.');
     axis equal, axis tight, hold on;
@@ -417,7 +403,7 @@ if doPlot
     shading interp;
     caxis([-cfg.visualization.color_axis_range cfg.visualization.color_axis_range]);
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Plot v-velocity field
     subplot(2,1,2);
     scatter(x1,y1,cfg.visualization.scatter_size*ones(length(xy1),1),1*V,'.');
     axis equal, axis tight, hold on;
@@ -436,5 +422,3 @@ if doPlot
 
     drawnow;
 end
-    
-% end
