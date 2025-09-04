@@ -48,8 +48,22 @@ end
 %% Initialize output array and begin neighbor search
 Nearest_Idx = zeros(NxNy1, k);  % Preallocate output matrix
 
-disp('Finding nearest neighbors for RBF-FD stencils...')
-disp(['Target: ' num2str(k) ' neighbors per node for ' num2str(NxNy1) ' nodes'])
+% Load configuration for progress display control
+try
+    cfg = config();
+    show_progress = cfg.simulation.show_progress;
+catch
+    show_progress = true;  % Default to showing progress if config unavailable
+end
+
+% Check if running in CI/test environment
+isCI = strcmpi(getenv('CI'), 'true');
+isTest = strcmpi(getenv('MATLAB_TEST'), 'true');
+
+if show_progress && ~isCI && ~isTest
+    disp('Finding nearest neighbors for RBF-FD stencils...')
+    disp(['Target: ' num2str(k) ' neighbors per node for ' num2str(NxNy1) ' nodes'])
+end
 
 
 
@@ -57,7 +71,7 @@ disp(['Target: ' num2str(k) ' neighbors per node for ' num2str(NxNy1) ' nodes'])
 %% Main loop: Find k nearest neighbors for each target node
 for j = 1:NxNy1
     % Progress indicator for large problems
-    if mod(j,100) == 0
+    if mod(j,100) == 0 && show_progress && ~isCI && ~isTest
         disp(['Processing node ' num2str(j) ' of ' num2str(NxNy1)])
     end
     
@@ -86,6 +100,10 @@ for j = 1:NxNy1
     
     % Store result for current target node
     Nearest_Idx(j,:) = Idx;
+end
+
+if show_progress && ~isCI && ~isTest
+    disp('Nearest neighbor search completed.')
 end
 
 

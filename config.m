@@ -60,6 +60,7 @@ config.simulation.time_step = 1e-2;
 config.simulation.num_time_steps = 5000;
 config.simulation.num_time_steps_ci = 20;
 config.simulation.random_seed = 42;  % Required for DistMesh reproducibility (uses rand() for rejection method)
+config.simulation.show_progress = true;  % Display time step progress (disabled in CI)
 
 %% Distance Thresholds for Special Treatment
 config.distances.x_min = 1;

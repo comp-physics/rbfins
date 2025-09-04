@@ -53,9 +53,21 @@ weight_xy = zeros(NxNy1,k);  % Weights for d^2/dxdy operator
 %% Main loop: Compute RBF-FD weights for each target node
 % Process each target node to build local RBF-FD stencils
 
+% Load configuration for progress display control
+try
+    cfg = config();
+    show_progress = cfg.simulation.show_progress;
+catch
+    show_progress = true;  % Default to showing progress if config unavailable
+end
+
+% Check if running in CI/test environment
+isCI = strcmpi(getenv('CI'), 'true');
+isTest = strcmpi(getenv('MATLAB_TEST'), 'true');
+
 for m1 = 1:NxNy1  
     % Progress indicator for large problems
-    if mod(m1,100)==0
+    if mod(m1,100)==0 && show_progress && ~isCI && ~isTest
         disp(['Computing RBF-FD weights: node ' num2str(m1) ' of ' num2str(NxNy1)])
     end
     

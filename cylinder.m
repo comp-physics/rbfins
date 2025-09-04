@@ -427,7 +427,9 @@ Idx_out_s = length(xy_s)+1+length(boundary_y_s): length(xy_s)+length(boundary_ou
 
 %% Main time-stepping loop: Fractional Step Method
 for j = 1:Nt
-    disp(['Time step j = ' num2str(j)])
+    if cfg.simulation.show_progress && ~isCI && ~isTest
+        disp(['Time step j = ' num2str(j)])
+    end
     
     % Use different schemes for startup vs main integration
     if j < 3
