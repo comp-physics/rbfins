@@ -14,7 +14,6 @@ y_min = -8;
 y_max = 8;
 
 
-
 dist =0.1;
 radius = 0.5;
 eps = 0.002;
@@ -493,7 +492,7 @@ figure('Name','1/Re = 1e-2');
  colormap(jet)
 
 % for j =1:1:5000
-j = 5000;
+j = Nt;
 
 % colormap(bluered)
 
