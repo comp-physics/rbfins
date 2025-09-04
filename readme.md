@@ -22,10 +22,15 @@ This MATLAB code implements a mesh-free method to solve the incompressible Navie
    - Display the final velocity field as scatter plots showing the u and v components
 
 4. **Modifying Simulation Parameters**:
-   - Reynolds number: Look for the variable `nu` in `cylinder.m` (currently set to 1/100)
-   - Time step: Look for the variable `dt` in `cylinder.m` (currently set to 1e-2)
-   - Number of time steps: Look for the variable `Nt` in `cylinder.m` (currently set to 5000)
-   - These parameters are defined in the simulation setup section of the code
+   - **Easy Configuration**: All simulation parameters are centralized in `config.m`
+   - **Key Parameters Available**:
+     - Reynolds number: `config.simulation.reynolds_number` (default: 100)
+     - Time step: `config.simulation.time_step` (default: 1e-2)
+     - Number of time steps: `config.simulation.num_time_steps` (default: 5000)
+     - Domain size: `config.domain.x_min/x_max/y_min/y_max`
+     - Cylinder radius: `config.mesh.cylinder_radius` (default: 0.5)
+     - RBF parameters: Various stencil sizes and polynomial degrees
+   - **To modify parameters**: Edit the values in `config.m` - no need to touch the main code
 
 5. **Computational Requirements**:
    - The simulation is computationally intensive and may take time to complete
