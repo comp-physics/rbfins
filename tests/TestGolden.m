@@ -124,7 +124,7 @@ classdef TestGolden < matlab.unittest.TestCase
             testCase.verifyLessThanOrEqual(absV, testCase.ABS_TOL, ...
                 sprintf('V field absolute difference %.2e exceeds tolerance %.2e', absV, testCase.ABS_TOL));
             
-            fprintf('\n✅ All golden file tests passed!\n');
+            fprintf('\n[PASS] All golden file tests passed!\n');
         end
     end
     
@@ -160,7 +160,7 @@ classdef TestGolden < matlab.unittest.TestCase
             % Compute relative and absolute differences between two arrays
             %
             % relErr = ||a - b|| / max(||b||, eps)
-            % absErr = ||a - b||_∞
+            % absErr = ||a - b||_inf (infinity norm)
             
             diff = a - b;
             absErr = max(abs(diff));

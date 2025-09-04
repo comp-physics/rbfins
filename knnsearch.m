@@ -1,148 +1,129 @@
 
 function [idx,D]=knnsearch(varargin)
-% KNNSEARCH   Linear k-nearest neighbor (KNN) search
-% IDX = knnsearch(Q,R,K) searches the reference data set R (n x d array
-% representing n points in a d-dimensional space) to find the k-nearest
-% neighbors of each query point represented by eahc row of Q (m x d array).
-% The results are stored in the (m x K) index array, IDX. 
+%KNNSEARCH Linear k-nearest neighbor (KNN) search for RBF-FD applications
 %
-% IDX = knnsearch(Q,R) takes the default value K=1.
+% This function performs efficient k-nearest neighbor search using linear
+% distance computation. While typically considered suitable only for small
+% datasets, the vectorized MATLAB implementation with JIT acceleration 
+% makes it competitive with tree-based methods for moderate-sized problems
+% common in RBF-FD applications.
 %
-% IDX = knnsearch(Q) or IDX = knnsearch(Q,[],K) does the search for R = Q.
+% SYNTAX:
+%   IDX = knnsearch(Q,R,K) - Find K nearest neighbors in R for each point in Q
+%   IDX = knnsearch(Q,R)   - Find 1 nearest neighbor (K=1 default)
+%   IDX = knnsearch(Q)     - Self-search: find neighbors in Q for each point in Q
+%   [IDX,D] = knnsearch(...) - Also return distances
 %
-% Rationality
-% Linear KNN search is the simplest appraoch of KNN. The search is based on
-% calculation of all distances. Therefore, it is normally believed only
-% suitable for small data sets. However, other advanced approaches, such as
-% kd-tree and delaunary become inefficient when d is large comparing to the
-% number of data points. On the other hand, the linear search in MATLAB is
-% relatively insensitive to d due to the vectorization. In  this code, the 
-% efficiency of linear search is further improved by using the JIT
-% aceeleration of MATLAB. Numerical example shows that its performance is
-% comparable with kd-tree algorithm in mex.
+% INPUTS:
+%   Q - Query points [m x d] where m = number of queries, d = dimension
+%   R - Reference points [n x d] where n = number of reference points
+%   K - Number of nearest neighbors to find (default: K=1)
 %
-% See also, kdtree, nnsearch, delaunary, dsearch
-% By Yi Cao at Cranfield University on 25 March 2008
-% Example 1: small data sets
-%{
-R=randn(100,2);
-Q=randn(3,2);
-idx=knnsearch(Q,R);
-plot(R(:,1),R(:,2),'b.',Q(:,1),Q(:,2),'ro',R(idx,1),R(idx,2),'gx');
-%}
-% Example 2: ten nearest points to [0 0]
-%{
-R=rand(100,2);
-Q=[0 0];
-K=10;
-idx=knnsearch(Q,R,10);
-r=max(sqrt(sum(R(idx,:).^2,2)));
-theta=0:0.01:pi/2;
-x=r*cos(theta);
-y=r*sin(theta);
-plot(R(:,1),R(:,2),'b.',Q(:,1),Q(:,2),'co',R(idx,1),R(idx,2),'gx',x,y,'r-','linewidth',2);
-%}
-% Example 3: cputime comparion with delaunay+dsearch I, a few to look up
-%{
-R=randn(10000,4);
-Q=randn(500,4);
-t0=cputime;
-idx=knnsearch(Q,R);
-t1=cputime;
-T=delaunayn(R);
-idx1=dsearchn(R,T,Q);
-t2=cputime;
-fprintf('Are both indices the same? %d\n',isequal(idx,idx1));
-fprintf('CPU time for knnsearch = %g\n',t1-t0);
-fprintf('CPU time for delaunay  = %g\n',t2-t1);
-%}
-% Example 4: cputime comparion with delaunay+dsearch II, lots to look up
-%{
-Q=randn(10000,4);
-R=randn(500,4);
-t0=cputime;
-idx=knnsearch(Q,R);
-t1=cputime;
-T=delaunayn(R);
-idx1=dsearchn(R,T,Q);
-t2=cputime;
-fprintf('Are both indices the same? %d\n',isequal(idx,idx1));
-fprintf('CPU time for knnsearch = %g\n',t1-t0);
-fprintf('CPU time for delaunay  = %g\n',t2-t1);
-%}
-% Example 5: cputime comparion with kd-tree by Steven Michael (mex file) 
-% <a href="http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=7030&objectType=file">kd-tree by Steven Michael</a> 
-%{
-Q=randn(10000,10);
-R=randn(500,10);
-t0=cputime;
-idx=knnsearch(Q,R);
-t1=cputime;
-tree=kdtree(R);
-idx1=kdtree_closestpoint(tree,Q);
-t2=cputime;
-fprintf('Are both indices the same? %d\n',isequal(idx,idx1));
-fprintf('CPU time for knnsearch = %g\n',t1-t0);
-fprintf('CPU time for delaunay  = %g\n',t2-t1);
-%}
-% Check inputs
-[Q,R,K,fident] = parseinputs(varargin{:});
-% Check outputs
-error(nargoutchk(0,2,nargout));
-% C2 = sum(C.*C,2)';
-[N,M] = size(Q);
-L=size(R,1);
-idx = zeros(N,K);
-D = idx;
+% OUTPUTS:
+%   IDX - Indices of nearest neighbors [m x K]
+%   D   - Distances to nearest neighbors [m x K] (if requested)
+%
+% ALGORITHM:
+%   Uses brute-force distance computation: d(i,j) = ||Q(i,:) - R(j,:)||
+%   For each query point, computes distances to all reference points,
+%   sorts, and returns K smallest. Self-distance is excluded when Q=R.
+%
+% NOTE:
+%   Optimized for RBF-FD stencil construction where high accuracy is needed
+%   and dataset sizes are moderate (typically < 10^5 points).
+%
+% AUTHOR: Yi Cao, Cranfield University, 25 March 2008
+% REFERENCE: Used in RBF-FD method for mesh-free discretization
+
+%% Input parsing and initialization
+[Q,R,K,fident] = parseinputs(varargin{:});  % Parse and validate inputs
+error(nargoutchk(0,2,nargout));             % Validate number of outputs
+
+% Problem dimensions
+[N,M] = size(Q);  % N = number of query points, M = dimension
+L = size(R,1);    % L = number of reference points
+
+% Preallocate output arrays
+idx = zeros(N,K);  % Indices of nearest neighbors
+D = idx;           % Distances to nearest neighbors (same size)
+%% Main search algorithm
 if K==1
-    % Loop for each query point
+    %% Single nearest neighbor search (optimized)
     for k=1:N
-        d=zeros(L,1);
+        d = zeros(L,1);  % Initialize squared distance array
+        
+        % Compute squared Euclidean distances to all reference points
         for t=1:M
-            d=d+(R(:,t)-Q(k,t)).^2;
+            d = d + (R(:,t) - Q(k,t)).^2;  % Accumulate (x_t - q_t)^2
         end
+        
+        % Exclude self-distance if query and reference sets are identical
         if fident
-            d(k)=inf;
+            d(k) = inf;  % Make self-distance infinite to exclude it
         end
-        [D(k),idx(k)]=min(d);
+        
+        % Find single nearest neighbor
+        [D(k), idx(k)] = min(d);  % Minimum distance and its index
     end
 else
+    %% Multiple nearest neighbors search (requires sorting)
     for k=1:N
-        d=zeros(L,1);
+        d = zeros(L,1);  % Initialize squared distance array
+        
+        % Compute squared Euclidean distances to all reference points
         for t=1:M
-            d=d+(R(:,t)-Q(k,t)).^2;
+            d = d + (R(:,t) - Q(k,t)).^2;  % Accumulate (x_t - q_t)^2
         end
+        
+        % Exclude self-distance if query and reference sets are identical
         if fident
-            d(k)=inf;
+            d(k) = inf;  % Make self-distance infinite to exclude it
         end
-        [s,t]=sort(d);
-        idx(k,:)=t(1:K);
-        D(k,:)=s(1:K);
+        
+        % Sort distances and extract K nearest neighbors
+        [s,t] = sort(d);       % Sort distances (s) and get indices (t)
+        idx(k,:) = t(1:K);     % Store indices of K nearest neighbors
+        D(k,:) = s(1:K);       % Store corresponding distances
     end
 end
-if nargout>1
-    D=sqrt(D);
+%% Convert squared distances to actual distances if requested
+if nargout > 1
+    D = sqrt(D);  % Take square root to get Euclidean distances
 end
+
 function [Q,R,K,fident] = parseinputs(varargin)
-% Check input and output
+%PARSEINPUTS Parse and validate input arguments for knnsearch
+%
+% Handles the various input syntax options and validates parameters
+% Validate number of input arguments
 error(nargchk(1,3,nargin));
-Q=varargin{1};
-if nargin<2
-    R=Q;
-    fident = true;
+
+% Parse query points (required)
+Q = varargin{1};
+
+% Parse reference points (optional, defaults to Q for self-search)
+if nargin < 2
+    R = Q;           % Self-search: find neighbors within Q
+    fident = true;   % Flag indicating identical query and reference sets
 else
-    fident = false;
-    R=varargin{2};
+    fident = false;  % Different query and reference sets
+    R = varargin{2};
 end
+
+% Handle empty reference set (equivalent to self-search)
 if isempty(R)
     fident = true;
-    R=Q;
+    R = Q;
 end
+
+% Check if query and reference sets are actually identical
 if ~fident
     fident = isequal(Q,R);
 end
-if nargin<3
-    K=1;
+
+% Parse number of neighbors K (optional, defaults to 1)
+if nargin < 3
+    K = 1;           % Single nearest neighbor
 else
-    K=varargin{3};
+    K = varargin{3}; % User-specified number of neighbors
 end

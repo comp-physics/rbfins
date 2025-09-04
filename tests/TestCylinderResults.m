@@ -47,12 +47,12 @@ classdef TestCylinderResults < matlab.unittest.TestCase
                     testCase.verifyLessThan(max_U, 10.0, 'Maximum U velocity should be reasonable');
                     testCase.verifyLessThan(max_V, 10.0, 'Maximum V velocity should be reasonable');
                     
-                    fprintf('✅ Basic physics test passed!\n');
+                    fprintf('[PASS] Basic physics test passed!\n');
                     fprintf('   Max |U|: %.3f, Max |V|: %.3f\n', max_U, max_V);
                 end
                 
             catch ME
-                fprintf('❌ Basic physics test failed: %s\n', ME.message);
+                fprintf('[FAIL] Basic physics test failed: %s\n', ME.message);
                 testCase.verifyTrue(false, sprintf('Basic physics test failed: %s', ME.message));
             end
         end
@@ -88,7 +88,7 @@ classdef TestCylinderResults < matlab.unittest.TestCase
                     mean_V = mean(V);
                     testCase.verifyLessThan(abs(mean_V), 0.5, 'V velocities should be roughly symmetric');
                     
-                    fprintf('✅ Velocity distribution test passed!\n');
+                    fprintf('[PASS] Velocity distribution test passed!\n');
                     fprintf('   Positive U fraction: %.3f\n', positive_U_fraction);
                     fprintf('   Mean V: %.3f\n', mean_V);
                 end
