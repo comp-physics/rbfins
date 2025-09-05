@@ -4,7 +4,7 @@ clear;
 % Add required paths for src functions and lib dependencies
 scriptDir = fileparts(mfilename('fullpath'));
 
-% Add src directory for supporting functions (including config.m)
+% Add src directory for supporting functions (config.m is now in main directory)
 srcPath = fullfile(scriptDir, 'src');
 if exist(srcPath, 'dir')
     addpath(srcPath);

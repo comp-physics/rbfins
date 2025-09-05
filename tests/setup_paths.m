@@ -11,7 +11,7 @@ set(0, 'DefaultFigureVisible', 'off');
 % Get the directory where this script is located
 scriptDir = fileparts(mfilename('fullpath'));
 
-% Add the parent directory to the path (where simulate.m is located)
+% Add the parent directory to the path (where simulate.m and config.m are located)
 addpath(fullfile(scriptDir, '..'));
 
 % Add the src directory to the path (where supporting functions are)

@@ -25,12 +25,16 @@ jobs:
           ls -la
           echo "Checking main executable..."
           ls -la simulate.m || echo "simulate.m not found"
+          echo "Checking config file..."
+          ls -la config.m || echo "config.m not found"
           echo "Checking src directory..."
           ls -la src || echo "src directory not found"
           echo "Checking lib directory..."
           ls -la lib || echo "lib directory not found"
           echo "Checking distmesh library..."
           ls -la lib/distmesh || echo "lib/distmesh directory not found"
+          echo "Checking tests directory..."
+          ls -la tests || echo "tests directory not found"
 
       - name: Run MATLAB unit tests
         uses: matlab-actions/run-tests@v2
