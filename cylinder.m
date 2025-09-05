@@ -1,6 +1,15 @@
 clc;
 clear;
 
+% Add required paths for src functions and lib dependencies
+scriptDir = fileparts(mfilename('fullpath'));
+
+% Add src directory for supporting functions (including config.m)
+srcPath = fullfile(scriptDir, 'src');
+if exist(srcPath, 'dir')
+    addpath(srcPath);
+end
+
 % Load Configuration
 cfg = config();
 
@@ -35,15 +44,14 @@ if isfield(cfg.simulation, 'random_seed') && ~isempty(cfg.simulation.random_seed
     fprintf('Random seed set to %d for DistMesh reproducibility\n', cfg.simulation.random_seed);
 end
 
-% Ensure DistMesh is available
+% Ensure DistMesh library is available
 if ~exist('distmesh2d', 'file')
-    % Try to add distmesh from the standard location (relative to script location)
-    scriptDir = fileparts(mfilename('fullpath'));
-    distmeshPath = fullfile(scriptDir, 'distmesh');
+    % Try to add distmesh from lib directory
+    distmeshPath = fullfile(scriptDir, 'lib', 'distmesh');
     if exist(distmeshPath, 'dir')
         addpath(distmeshPath);
     else
-        error('distmesh directory not found. Please run setup_paths() or add distmesh to your path manually.');
+        error('distmesh library not found. Please run setup_paths() or add lib/distmesh to your path manually.');
     end
 end
 

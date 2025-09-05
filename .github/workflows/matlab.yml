@@ -23,10 +23,14 @@ jobs:
         run: |
           echo "Checking directory structure..."
           ls -la
+          echo "Checking main executable..."
+          ls -la cylinder.m || echo "cylinder.m not found"
           echo "Checking src directory..."
           ls -la src || echo "src directory not found"
-          echo "Checking distmesh directory..."
-          ls -la src/distmesh || echo "src/distmesh directory not found"
+          echo "Checking lib directory..."
+          ls -la lib || echo "lib directory not found"
+          echo "Checking distmesh library..."
+          ls -la lib/distmesh || echo "lib/distmesh directory not found"
 
       - name: Run MATLAB unit tests
         uses: matlab-actions/run-tests@v2

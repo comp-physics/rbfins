@@ -11,15 +11,18 @@ set(0, 'DefaultFigureVisible', 'off');
 % Get the directory where this script is located
 scriptDir = fileparts(mfilename('fullpath'));
 
-% Add the src directory to the path (where cylinder.m and config.m are)
+% Add the parent directory to the path (where cylinder.m is located)
+addpath(fullfile(scriptDir, '..'));
+
+% Add the src directory to the path (where supporting functions are)
 addpath(fullfile(scriptDir, '..', 'src'));
 
-% Add the distmesh directory to the path
-distmeshPath = fullfile(scriptDir, '..', 'src', 'distmesh');
+% Add the distmesh library to the path
+distmeshPath = fullfile(scriptDir, '..', 'lib', 'distmesh');
 if exist(distmeshPath, 'dir')
     addpath(distmeshPath);
 else
-    fprintf('Warning: distmesh directory not found at %s\n', distmeshPath);
+    fprintf('Warning: distmesh library not found at %s\n', distmeshPath);
 end
 
 % Print the current path for debugging
