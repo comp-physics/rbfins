@@ -66,9 +66,18 @@ x_max = cfg.domain.x_max;  % Right boundary of domain
 y_min = cfg.domain.y_min;  % Bottom boundary of domain
 y_max = cfg.domain.y_max;  % Top boundary of domain
 
-%% Generate cylinder geometry using geometry helper
-% This encapsulates all cylinder-specific mesh generation and boundary extraction
-G = make_cylinder_geometry(cfg);
+%% Generate geometry using appropriate geometry helper
+% This supports different obstacle geometries via the config.geometry.type parameter
+switch lower(cfg.geometry.type)
+    case 'cylinder'
+        fprintf('Using cylinder geometry (radius=%.2f)...\n', cfg.geometry.obstacle_radius);
+        G = make_cylinder_geometry(cfg);
+    case 'ellipse'
+        fprintf('Using ellipse geometry (a=%.2f, b=%.2f)...\n', cfg.geometry.ellipse_a, cfg.geometry.ellipse_b);
+        G = make_ellipse_geometry(cfg);
+    otherwise
+        error('Unknown geometry type: %s. Supported types: cylinder, ellipse', cfg.geometry.type);
+end
 
 % Extract mesh data from geometry structure
 xy = G.xy;                    % Interior velocity nodes
@@ -87,8 +96,17 @@ boundary_out_s = G.boundary_out_s; % Outlet boundary nodes (P-grid)
 boundary_y_s = G.boundary_y_s;     % Wall boundary nodes (P-grid)
 boundary_obs_s = G.boundary_obs_s; % Obstacle boundary nodes (P-grid)
 
-% Extract geometry-specific parameters
-radius = G.radius;               % Obstacle radius
+% Extract geometry-specific parameters (used for distance calculations)
+if isfield(G, 'radius')
+    radius = G.radius;           % Cylinder radius
+    obs_char_length = radius;    % Characteristic length for distance calculations
+elseif isfield(G, 'a') && isfield(G, 'b')
+    a = G.a;                     % Ellipse semi-major axis
+    b = G.b;                     % Ellipse semi-minor axis  
+    obs_char_length = min(a, b); % Use minimum axis as characteristic length
+else
+    error('Geometry structure missing expected parameters');
+end
 
 % Combine boundary nodes in specific order for compatibility
 boundary_s = [boundary_y_s; boundary_out_s; boundary_in_s; boundary_obs_s];
