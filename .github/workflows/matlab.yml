@@ -24,7 +24,7 @@ jobs:
           echo "Checking directory structure..."
           ls -la
           echo "Checking main executable..."
-          ls -la cylinder.m || echo "cylinder.m not found"
+          ls -la simulate.m || echo "simulate.m not found"
           echo "Checking src directory..."
           ls -la src || echo "src directory not found"
           echo "Checking lib directory..."

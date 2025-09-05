@@ -1,7 +1,7 @@
 classdef TestCylinder < matlab.unittest.TestCase
     methods (Test)
         function smokeRun(testCase)
-            % Test that the cylinder.m script runs without errors in CI environment
+            % Test that the simulate.m script runs without errors in CI environment
             
             % Set CI environment variable to ensure short run
             setenv('CI', 'true');
@@ -14,7 +14,7 @@ classdef TestCylinder < matlab.unittest.TestCase
             try
                 % Run the script and capture any errors
                 evalin('base', 'clear; success = false; errorMsg = "";');
-                evalin('base', 'try; run(''cylinder.m''); success = true; catch ME; errorMsg = ME.message; end;');
+                evalin('base', 'try; simulate; success = true; catch ME; errorMsg = ME.message; end;');
                 
                 % Check if the script ran successfully
                 success = evalin('base', 'success');
@@ -64,11 +64,11 @@ classdef TestCylinder < matlab.unittest.TestCase
             try
                 setup_paths();
                 
-                % Check that cylinder.m exists
-                testCase.verifyTrue(exist('cylinder.m', 'file') > 0, 'cylinder.m file should exist');
+                % Check that simulate.m exists
+                testCase.verifyTrue(exist('simulate.m', 'file') > 0, 'simulate.m file should exist');
                 
                 % Read the script content
-                content = fileread('cylinder.m');
+                content = fileread('simulate.m');
                 
                 % Check for key components
                 testCase.verifyTrue(contains(content, 'cfg = config()'), 'Script should load configuration');

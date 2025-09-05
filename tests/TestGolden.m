@@ -63,7 +63,7 @@ classdef TestGolden < matlab.unittest.TestCase
             % Run simulation using same approach as other tests
             try
                 evalin('base', 'clear; success = false; errorMsg = "";');
-                evalin('base', 'try; run(''cylinder.m''); success = true; catch ME; errorMsg = ME.message; end;');
+                evalin('base', 'try; simulate; success = true; catch ME; errorMsg = ME.message; end;');
                 
                 success = evalin('base', 'success');
                 testCase.verifyTrue(logical(success), 'Current simulation should complete without errors');

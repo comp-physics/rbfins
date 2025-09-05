@@ -11,11 +11,17 @@ set(0, 'DefaultFigureVisible', 'off');
 % Get the directory where this script is located
 scriptDir = fileparts(mfilename('fullpath'));
 
-% Add the parent directory to the path (where cylinder.m is located)
+% Add the parent directory to the path (where simulate.m is located)
 addpath(fullfile(scriptDir, '..'));
 
 % Add the src directory to the path (where supporting functions are)
 addpath(fullfile(scriptDir, '..', 'src'));
+
+% Add the geometry subdirectory to the path
+geometryPath = fullfile(scriptDir, '..', 'src', 'geometry');
+if exist(geometryPath, 'dir')
+    addpath(geometryPath);
+end
 
 % Add the distmesh library to the path
 distmeshPath = fullfile(scriptDir, '..', 'lib', 'distmesh');

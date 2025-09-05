@@ -10,7 +10,7 @@ setup_paths();
 
 % Run the simulation
 fprintf('Running simulation...\n');
-run('cylinder.m');
+simulate;
 
 % Load config for metadata
 cfg = config();

@@ -1,4 +1,4 @@
-function [W3,p] = NS_2d_cylinder_PHS(dt,nu,W1,W2,Dy,Dx,L_inv,L_u_inv,L_v_inv,L0,L_B,L_B_c,L_W,L_B_y,L_B_S,D0_12_x,D0_12_y,D0_21_x,D0_21_y,Dy_b,Dy_b_1,D0_12_x_c,D0_12_y_c,p0,W0)
+function [W3,p] = NS_2d_cylinder_PHS(dt,nu,W1,W2,Dy,Dx,L_inv,L_u_inv,L_v_inv,L0,L_B,L_B_obs,L_W,L_B_y,L_B_S,D0_12_x,D0_12_y,D0_21_x,D0_21_y,Dy_b,Dy_b_1,D0_12_x_obs,D0_12_y_obs,p0,W0)
 %NS_2D_CYLINDER_PHS Fractional step method for 2D Navier-Stokes equations around cylinder
 %
 % This function implements the fractional step method for incompressible Navier-Stokes:
@@ -14,11 +14,11 @@ function [W3,p] = NS_2d_cylinder_PHS(dt,nu,W1,W2,Dy,Dx,L_inv,L_u_inv,L_v_inv,L0,
 %   L_inv   - Pressure Poisson solver (LU factorized)
 %   L_u_inv, L_v_inv - Velocity diffusion solvers (LU factorized)
 %   L0      - Laplacian operator for velocity diffusion
-%   L_B, L_B_c, L_W, L_B_y, L_B_S - Boundary indexing parameters
+%   L_B, L_B_obs, L_W, L_B_y, L_B_S - Boundary indexing parameters
 %   D0_12_x, D0_12_y - Divergence operators (V-grid to P-grid)
 %   D0_21_x, D0_21_y - Gradient operators (P-grid to V-grid)
 %   Dy_b, Dy_b_1     - Boundary derivative operators
-%   D0_12_x_c, D0_12_y_c - Cylinder boundary operators
+%   D0_12_x_obs, D0_12_y_obs - Obstacle boundary operators
 %   p0      - Previous pressure field
 %   W0      - Initial velocity field (for reference)
 %
@@ -90,10 +90,10 @@ V2(L_W+L_B_y+1:end-L_B) = zeros(L_W2/2-L_W-L_B-L_B_y,1);  % Outlet BCs for v
 U2(L_W+1:L_W+L_B_y) = zeros(L_B_y,1);  % Wall BC for u
 V2(L_W+1:L_W+L_B_y) = zeros(L_B_y,1);  % Wall BC for v
 
-% Apply pressure-dependent boundary conditions on cylinder (from previous pressure)
-[L_B_c,~] = size(D0_12_x_c);  % Number of cylinder boundary nodes
-U2(end-L_B_c+1:end) = D0_12_x_c*p0;  % Cylinder BC with pressure: du/dn = dp/dx
-V2(end-L_B_c+1:end) = D0_12_y_c*p0;  % Cylinder BC with pressure: dv/dn = dp/dy
+% Apply pressure-dependent boundary conditions on obstacle (from previous pressure)
+[L_B_obs_local,~] = size(D0_12_x_obs);  % Number of obstacle boundary nodes
+U2(end-L_B_obs_local+1:end) = D0_12_x_obs*p0;  % Obstacle BC with pressure: du/dn = dp/dx
+V2(end-L_B_obs_local+1:end) = D0_12_y_obs*p0;  % Obstacle BC with pressure: dv/dn = dp/dy
 
 % Solve implicit viscous step: (I - dt*nu/2*del^2) * u** = RHS
 U2 = L_u_inv(U2);  % Solve for u-velocity after viscous diffusion

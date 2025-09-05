@@ -15,7 +15,6 @@ config.domain.y_max = 8;
 
 %% Mesh Generation Parameters
 config.mesh.dist = 0.1;                    % Mesh spacing
-config.mesh.cylinder_radius = 0.5;         % Cylinder radius
 config.mesh.boundary_eps = 0.002;          % Boundary tolerance
 config.mesh.refine_a1 = 0.05;             % Mesh refinement parameter A1
 config.mesh.refine_b1 = 0.08;             % Mesh refinement parameter B1
@@ -23,10 +22,13 @@ config.mesh.refine_a2 = 0.05;             % Mesh refinement parameter A2
 config.mesh.refine_b2 = 0.08;             % Mesh refinement parameter B2
 config.mesh.edge_multiplier = 3;          % Multiplier for edge generation from triangles
 
+%% Geometry Parameters (obstacle-generic naming)
+config.geometry.obstacle_radius = 0.5;    % Obstacle radius (for cylinder geometry)
+
 %% RBF-FD Algorithm Parameters
 % Main stencil sizes
 config.rbf.stencil_size_main = 35;
-config.rbf.stencil_size_boundary_cylinder = 20;
+config.rbf.stencil_size_boundary_obstacle = 20;
 config.rbf.stencil_size_boundary_wall = 15;
 config.rbf.stencil_size_boundary_outlet = 30;
 
@@ -46,9 +48,9 @@ config.rbf.order_interpolation_high = 25;
 config.rbf.order_interpolation_high_poly = 5;
 config.rbf.poly_degree_interpolation_high = 3;
 
-config.rbf.order_near_cylinder = 30;
-config.rbf.order_near_cylinder_poly = 7;
-config.rbf.poly_degree_near_cylinder = 4;
+config.rbf.order_near_obstacle = 30;
+config.rbf.order_near_obstacle_poly = 7;
+config.rbf.poly_degree_near_obstacle = 4;
 
 config.rbf.order_near_boundary = 17;
 config.rbf.poly_degree_near_boundary = 2;
@@ -78,5 +80,13 @@ config.visualization.scatter_size = 15;
 config.visualization.plot_tick_y = [-5, 0, 5];
 config.visualization.plot_tick_x = [-5, 0, 5, 10, 15];
 config.visualization.color_axis_range = 1e-0;
+
+%% Backward Compatibility for Legacy Cylinder-Specific Naming
+% Maintain old naming for compatibility with existing code
+config.mesh.cylinder_radius = config.geometry.obstacle_radius;
+config.rbf.stencil_size_boundary_cylinder = config.rbf.stencil_size_boundary_obstacle;
+config.rbf.order_near_cylinder = config.rbf.order_near_obstacle;
+config.rbf.order_near_cylinder_poly = config.rbf.order_near_obstacle_poly;
+config.rbf.poly_degree_near_cylinder = config.rbf.poly_degree_near_obstacle;
 
 end

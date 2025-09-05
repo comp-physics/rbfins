@@ -10,7 +10,7 @@ classdef TestCylinderResults < matlab.unittest.TestCase
                 
                 % Run the simulation in a controlled way
                 evalin('base', 'clear; success = false; errorMsg = "";');
-                evalin('base', 'try; run(''cylinder.m''); success = true; catch ME; errorMsg = ME.message; end;');
+                evalin('base', 'try; simulate; success = true; catch ME; errorMsg = ME.message; end;');
                 
                 % Check if the simulation ran successfully
                 success = evalin('base', 'success');
@@ -68,7 +68,7 @@ classdef TestCylinderResults < matlab.unittest.TestCase
                 % Run the simulation if it hasn't been run already
                 W_exists = evalin('base', 'exist(''W'', ''var'') > 0');
                 if ~W_exists
-                    evalin('base', 'try; run(''cylinder.m''); catch; end;');
+                    evalin('base', 'try; simulate; catch; end;');
                 end
                 
                 % Check if W exists now
@@ -110,7 +110,7 @@ classdef TestCylinderResults < matlab.unittest.TestCase
                 % Run the simulation if it hasn't been run already
                 W_exists = evalin('base', 'exist(''W'', ''var'') > 0');
                 if ~W_exists
-                    evalin('base', 'try; run(''cylinder.m''); catch; end;');
+                    evalin('base', 'try; simulate; catch; end;');
                 end
                 
                 % Check if W exists now
