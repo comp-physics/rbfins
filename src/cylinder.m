@@ -37,9 +37,11 @@ end
 
 % Ensure DistMesh is available
 if ~exist('distmesh2d', 'file')
-    % Try to add distmesh from the standard location
-    if exist('distmesh', 'dir')
-        addpath('distmesh');
+    % Try to add distmesh from the standard location (relative to script location)
+    scriptDir = fileparts(mfilename('fullpath'));
+    distmeshPath = fullfile(scriptDir, 'distmesh');
+    if exist(distmeshPath, 'dir')
+        addpath(distmeshPath);
     else
         error('distmesh directory not found. Please run setup_paths() or add distmesh to your path manually.');
     end

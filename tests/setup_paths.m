@@ -11,11 +11,11 @@ set(0, 'DefaultFigureVisible', 'off');
 % Get the directory where this script is located
 scriptDir = fileparts(mfilename('fullpath'));
 
-% Add the parent directory to the path (where cylinder.m and config.m are)
-addpath(fullfile(scriptDir, '..'));
+% Add the src directory to the path (where cylinder.m and config.m are)
+addpath(fullfile(scriptDir, '..', 'src'));
 
 % Add the distmesh directory to the path
-distmeshPath = fullfile(scriptDir, '..', 'distmesh');
+distmeshPath = fullfile(scriptDir, '..', 'src', 'distmesh');
 if exist(distmeshPath, 'dir')
     addpath(distmeshPath);
 else

@@ -23,8 +23,10 @@ jobs:
         run: |
           echo "Checking directory structure..."
           ls -la
+          echo "Checking src directory..."
+          ls -la src || echo "src directory not found"
           echo "Checking distmesh directory..."
-          ls -la distmesh || echo "distmesh directory not found"
+          ls -la src/distmesh || echo "src/distmesh directory not found"
 
       - name: Run MATLAB unit tests
         uses: matlab-actions/run-tests@v2
