@@ -18,47 +18,8 @@ end
 % Load Configuration
 cfg = config();
 
-% Check if running in CI environment or headless mode
-isCI = strcmpi(getenv('CI'), 'true');
-isTest = strcmpi(getenv('MATLAB_TEST'), 'true');
-
-% Completely disable plotting for CI/test environments
-doPlot = ~isCI && ~isTest;
-
-if ~doPlot
-    % Aggressively disable all graphics for tests
-    set(0, 'DefaultFigureVisible', 'off');
-    fprintf('Plotting completely disabled for testing/CI\n');
-    hasDisplay = false;
-else
-    % Only check display if we might want to plot
-    try
-        % Try to create a figure to test if display is available
-        f = figure('Visible', 'off');
-        close(f);
-        hasDisplay = true;
-    catch
-        hasDisplay = false;
-        doPlot = false;
-    end
-end
-
-% Set random seed for DistMesh reproducibility (DistMesh uses rand() for rejection method)
-if isfield(cfg.simulation, 'random_seed') && ~isempty(cfg.simulation.random_seed)
-    rng(cfg.simulation.random_seed);
-    fprintf('Random seed set to %d for DistMesh reproducibility\n', cfg.simulation.random_seed);
-end
-
-% Ensure DistMesh library is available
-if ~exist('distmesh2d', 'file')
-    % Try to add distmesh from lib directory
-    distmeshPath = fullfile(scriptDir, 'lib', 'distmesh');
-    if exist(distmeshPath, 'dir')
-        addpath(distmeshPath);
-    else
-        error('distmesh library not found. Please run setup_paths() or add lib/distmesh to your path manually.');
-    end
-end
+%% 1) Setup environment and dependencies
+[doPlot, isCI, isTest, Nt] = setup_environment(cfg, scriptDir);
 
 % Extract domain parameters - define computational domain boundaries
 x_min = cfg.domain.x_min;  % Left boundary of domain
@@ -66,18 +27,8 @@ x_max = cfg.domain.x_max;  % Right boundary of domain
 y_min = cfg.domain.y_min;  % Bottom boundary of domain
 y_max = cfg.domain.y_max;  % Top boundary of domain
 
-%% Generate geometry using appropriate geometry helper
-% This supports different obstacle geometries via the config.geometry.type parameter
-switch lower(cfg.geometry.type)
-    case 'cylinder'
-        fprintf('Using cylinder geometry (radius=%.2f)...\n', cfg.geometry.obstacle_radius);
-        G = make_cylinder_geometry(cfg);
-    case 'ellipse'
-        fprintf('Using ellipse geometry (a=%.2f, b=%.2f)...\n', cfg.geometry.ellipse_a, cfg.geometry.ellipse_b);
-        G = make_ellipse_geometry(cfg);
-    otherwise
-        error('Unknown geometry type: %s. Supported types: cylinder, ellipse', cfg.geometry.type);
-end
+%% 2) Generate geometry
+G = build_geometry(cfg);
 
 % Extract mesh data from geometry structure
 xy = G.xy;                    % Interior velocity nodes
@@ -112,16 +63,15 @@ end
 boundary_s = [boundary_y_s; boundary_out_s; boundary_in_s; boundary_obs_s];
 boundary = [boundary_y; boundary_out; boundary_in; boundary_obs];
 
+% Initial mesh visualization
 if doPlot
-figure;
-
-scatter(xy(:,1),xy(:,2),'k.'); hold on; axis square;
+    figure;
+    scatter(xy(:,1),xy(:,2),'k.'); hold on; axis square;
     scatter(boundary_in(:,1),boundary_in(:,2),'b+');
     scatter(boundary_y(:,1),boundary_y(:,2),'r+');
     scatter(boundary_out(:,1),boundary_out(:,2),'b+');
     scatter(boundary_obs(:,1),boundary_obs(:,2),'m+');
-
-axis equal;
+    axis equal;
 end
 
 % Combine interior and boundary nodes to create complete grids
@@ -145,224 +95,38 @@ y_min_dist = cfg.distances.y_min;  % Distance threshold from bottom boundary
 y_max_dist = cfg.distances.y_max;  % Distance threshold from top boundary
 r_dist = cfg.mesh.refine_a2*cfg.mesh.edge_multiplier;  % Distance threshold from cylinder
 
-%% Determine local stencils for RBF-FD method
-% For velocity nodes: find k nearest neighbors for each node
-k = cfg.rbf.stencil_size_main;  % Number of neighbors for main stencils
-[Nearest_Idx] = nearest_interp(xy1,xy1,k);  % k-nearest neighbors for V-grid
+%% 3) Build stencils for RBF-FD method
+S = build_stencils(xy1, xy1_s, xy, xy_s, G, cfg);
 
-% For pressure nodes: find k nearest neighbors for each node
-k = cfg.rbf.stencil_size_main;
-[Nearest_Idx_s] = nearest_interp(xy1_s,xy1_s,k);  % k-nearest neighbors for P-grid
+%% 4) Build pressure system and boundary conditions
+P = build_pressure_system(G, xy_s, xy1_s, cfg);
+L_inv_s = P.L_inv_s;
+D0_21_x_obs = P.D0_21_x_obs;
+D0_21_y_obs = P.D0_21_y_obs;
 
-%% Generate Laplacian operator for pressure Poisson equation (P-grid to P-grid)
-% Generate RBF-FD weights for Laplacian operator at interior pressure nodes
-[D_s_all] = RBF_PHS_FD_all(xy_s,xy1_s,Nearest_Idx_s(1:length(xy_s),:),cfg.rbf.order_main,cfg.rbf.poly_degree_main,cfg.rbf.laplacian_order);
-L_s = D_s_all{3};  % Extract Laplacian operator (del^2 p = d^2p/dx^2 + d^2p/dy^2)
+%% 5) Build inter-grid operators (P-grid ↔ V-grid)
+[D0_21_x, D0_21_y, D0_12_x, D0_12_y] = build_intergrid_ops(G, xy, xy1, xy_s, xy1_s, S, cfg);
 
-%% Generate boundary condition operators for pressure system
-% Obstacle boundary: Neumann BC (dp/dn = 0, normal derivative = 0)
-[Dn1_b_s, Nearest_Idx_b_obs] = build_obstacle_pressure_bc(G, xy_s, xy1_s, cfg);
+%% 6) Build velocity operators and boundary conditions
+Vops = build_velocity_operators(G, xy, xy1, boundary_y, boundary_out, S, cfg, cfg.distances);
 
-% Wall boundaries (top/bottom): Neumann BC (dp/dy = 0)
-[Nearest_Idx_b_y] = nearest_interp(boundary_y_s,[xy_s; xy1_s(length(xy_s)+length(boundary_y_s)+1,:)],cfg.rbf.stencil_size_boundary_wall);
-Nearest_Idx_b_y = [(length(xy_s)+1:length(xy_s)+length(boundary_y_s))' Nearest_Idx_b_y];
+Dx = Vops.Dx; 
+Dy = Vops.Dy; 
+L0 = Vops.L0;
+Dy_b_0 = Vops.Dy_b_0; 
+Dx_b_0 = Vops.Dx_b_0;
+Dy_b = Vops.Dy_b; 
+Dy_b_1 = Vops.Dy_b_1;
 
-D = RBF_PHS_FD_all(boundary_y_s,xy1_s,Nearest_Idx_b_y,cfg.rbf.order_boundary,cfg.rbf.poly_degree_boundary,cfg.rbf.derivative_order);
-Dy_b_s = D{2};  % y-derivative operator for wall boundary condition
+%% 7) Precompute velocity system solvers
+[L_u_inv, L_v_inv] = precompute_velocity_solvers(L0, Dy_b_0, Dx_b_0, xy, boundary_y, boundary_out, cfg);
 
-% Inlet boundary: Neumann BC (dp/dx = 0)
-[Nearest_Idx_b_x] = nearest_interp(boundary_in_s,xy1_s(1:length(xy_s)+length(boundary_y_s),:),cfg.rbf.stencil_size_boundary_wall);
-Nearest_Idx_b_x = [(length(xy1_s)+1-length(boundary_obs_s)-length(boundary_in_s):length(xy1_s)-length(boundary_obs_s))' Nearest_Idx_b_x];
-
-D = RBF_PHS_FD_all(boundary_in_s,xy1_s,Nearest_Idx_b_x,cfg.rbf.order_boundary,cfg.rbf.poly_degree_boundary,cfg.rbf.derivative_order);
-Dx_in_s = D{1};  % x-derivative operator for inlet boundary condition
-
-% Outlet boundary: Neumann BC (dp/dx = 0)
-[Nearest_Idx_b_x] = nearest_interp(boundary_out_s,xy1_s(1:length(xy_s)+length(boundary_y_s),:),cfg.rbf.stencil_size_boundary_outlet);
-Nearest_Idx_b_x = [(length(xy_s)+1+length(boundary_y_s):length(xy_s)+length(boundary_y_s)+length(boundary_out_s))' Nearest_Idx_b_x];
-
-D = RBF_PHS_FD_all(boundary_out_s,xy1_s,Nearest_Idx_b_x, cfg.rbf.order_boundary,cfg.rbf.poly_degree_boundary, cfg.rbf.derivative_order);
-Dx_out_s = D{1};  % x-derivative operator for outlet boundary condition
-
-%% Assemble pressure boundary condition matrices
-% Initialize boundary condition matrices (each row corresponds to one boundary node)
-L_bc_c = zeros(length(boundary_s), length(xy1_s));   % Cylinder BC matrix
-L_bc_out = zeros(length(boundary_s), length(xy1_s)); % Outlet BC matrix  
-L_bc_y = zeros(length(boundary_s), length(xy1_s));   % Wall BC matrix
-L_bc_in = zeros(length(boundary_s), length(xy1_s));  % Inlet BC matrix
-
-% Fill obstacle boundary condition matrix (dp/dn = 0)
-Idx_boundary_obs = length(xy1_s)-length(boundary_obs_s)+[1:length(boundary_obs_s)];
-L_bc_c(Idx_boundary_obs-length(xy_s),:) = Dn1_b_s;
-
-% Fill outlet boundary condition matrix (dp/dx = 0)
-Idx_boundary_out = length(xy_s) + length(boundary_y_s) + [1:length(boundary_out_s)];
-L_bc_out(Idx_boundary_out-length(xy_s),:) = Dx_out_s;
-
-% Fill wall boundary condition matrix (dp/dy = 0)
-Idx_boundary_y = length(xy_s) + [1:length(boundary_y_s)];
-L_bc_y(Idx_boundary_y-length(xy_s),:) = Dy_b_s;
-
-% Fill inlet boundary condition matrix (dp/dx = 0)
-Idx_boundary_in = length(xy1_s) - length(boundary_obs_s) - length(boundary_in_s) + [1:length(boundary_in_s)];
-L_bc_in(Idx_boundary_in-length(xy_s),:) = Dx_in_s;
-
-% Assemble complete pressure system: [Laplacian at interior; BCs at boundary]
-L1 = [L_s(1:length(xy_s),:); L_bc_c+L_bc_out+L_bc_y+L_bc_in];
-
-% Add regularization to fix pressure datum (pressure is defined up to constant)
-% This adds the constraint sum(p) = 0 to make the system uniquely solvable
-L1 = [L1 [ones(length(xy_s),1); zeros(length(boundary_s),1)]; [ones(1,length(xy_s)) zeros(1,length(boundary_s))] 0];
-
-% Precompute LU decomposition for efficient pressure solves
-[LL,UU,pp,qq,rr] = lu(L1);
-L_inv_s = @(v) (qq*(UU\(LL\(pp*(rr\(v))))));  % Pressure solver function
-
-%% Generate interpolation operators between grids (P-grid to V-grid)
-% Obstacle boundary gradient operators for pressure-dependent boundary conditions
-[D0_21_x_obs, D0_21_y_obs] = build_obstacle_grad_operators(G, xy1_s, cfg);
-
-%%  differentiation : P-grid to V-grid
-[Nearest_Idx_interp_21] = nearest_interp(xy1(1:length(xy)+length(boundary_y)+length(boundary_out),:),xy1_s,cfg.rbf.stencil_size_boundary_outlet);
-
-% low-order PHS-RBFs and polynomials near boundaries
-[D0_21_all] = RBF_PHS_FD_all(xy1(1:length(xy)+length(boundary_y)+length(boundary_out),:),xy1_s,Nearest_Idx_interp_21,cfg.rbf.order_interpolation_low,cfg.rbf.poly_degree_main,cfg.rbf.poly_degree_interpolation_low);
-
-D0_21_x = D0_21_all{1};
-D0_21_y = D0_21_all{2};
-
-% Use precomputed indices for nodes far from all boundaries (high-order region)
-Nearest_Idx_nc = find(G.idx_far_boundaries_V);
-xy_nc = xy1(Nearest_Idx_nc,:);
-
-[D0_21_all_nc] = RBF_PHS_FD_all(xy_nc,xy1_s,Nearest_Idx_interp_21(Nearest_Idx_nc,:),cfg.rbf.order_interpolation_high,cfg.rbf.order_interpolation_high_poly,cfg.rbf.poly_degree_interpolation_high);
-
-D0_21_x(Nearest_Idx_nc,:) =  D0_21_all_nc{1};
-D0_21_y(Nearest_Idx_nc,:) =  D0_21_all_nc{2};
-
-% Differentiation operators: V-grid to P-grid
-[Nearest_Idx_interp] = nearest_interp(xy_s,xy1,cfg.rbf.stencil_size_boundary_outlet);
-
-% low-order PHS-RBFs and polynomials near boundaries
-D0_12_all = RBF_PHS_FD_all(xy_s,xy1,Nearest_Idx_interp,cfg.rbf.order_boundary,cfg.rbf.order_interpolation_high_poly,cfg.rbf.derivative_order);
-
-D0_12_x =  D0_12_all{1};
-D0_12_y =  D0_12_all{2};
-
-% Use precomputed indices for pressure nodes far from all boundaries (high-order region)
-Nearest_Idx_nc = find(G.idx_far_boundaries_P);
-xy_nc = xy1_s(Nearest_Idx_nc,:);
-
-D0_12_all_nc = RBF_PHS_FD_all(xy_nc,xy1,Nearest_Idx_interp(Nearest_Idx_nc,:),cfg.rbf.order_interpolation_high,cfg.rbf.order_interpolation_high_poly,cfg.rbf.poly_degree_interpolation_high);
-
-D0_12_x(Nearest_Idx_nc,:)  =  D0_12_all_nc{1};
-D0_12_y(Nearest_Idx_nc,:)  =  D0_12_all_nc{2};
-
-%   B.C.s for V-grid
-[Nearest_Idx_b_y] = nearest_interp(boundary_y,xy,cfg.rbf.stencil_size_boundary_obstacle);
-Nearest_Idx_b_y = [(length(xy)+1:length(xy)+length(boundary_y))' Nearest_Idx_b_y];
-
-D = RBF_PHS_FD_all(boundary_y,xy1,Nearest_Idx_b_y,cfg.rbf.order_boundary,cfg.rbf.poly_degree_boundary,cfg.rbf.derivative_order);
-Dy_b_0 = D{2};
-
-Dy_b = Dy_b_0;
-Dy_b_1 = diag(Dy_b(:,Nearest_Idx_b_y(:,1)));
-Dy_b(:,Nearest_Idx_b_y(:,1)) = zeros(length(boundary_y),length(boundary_y));
-
-[Nearest_Idx_b_out] = nearest_interp(boundary_out,xy,cfg.rbf.stencil_size_boundary_obstacle);
- Nearest_Idx_b_out = [(length(xy)+length(boundary_y)+1:(length(xy)+length(boundary_y)+length(boundary_out)))' Nearest_Idx_b_out];
-
-D =  RBF_PHS_FD_all(boundary_out,xy1,Nearest_Idx_b_out,cfg.rbf.order_boundary,cfg.rbf.poly_degree_boundary, cfg.rbf.derivative_order);
-Dx_b_0 = D{1};
-
-Dx_b = Dx_b_0;
-Dx_b_1 = diag(Dx_b(:,Nearest_Idx_b_out(:,1)));
-Dx_b(:,Nearest_Idx_b_out(:,1)) = zeros(length(boundary_out),length(boundary_out));
-
-D_all = RBF_PHS_FD_all(xy1,xy1,Nearest_Idx,cfg.rbf.order_main,cfg.rbf.poly_degree_main,cfg.rbf.laplacian_order);
-
-Dx = D_all{1};
-Dy = D_all{2};
-L0 = D_all{3};
-
-% Use precomputed indices for velocity nodes near obstacle (special RBF treatment)
-Nearest_Idx_nb = find(G.idx_near_obs_V);
-xy_nb = xy1(Nearest_Idx_nb,:);
-
-D_all_nb = RBF_PHS_FD_all(xy_nb,xy1,Nearest_Idx(Nearest_Idx_nb,:),cfg.rbf.order_near_obstacle,cfg.rbf.order_near_obstacle_poly,cfg.rbf.poly_degree_near_obstacle);
-
-Dx(Nearest_Idx_nb,:)  =  D_all_nb{1};
-Dy(Nearest_Idx_nb,:)  =  D_all_nb{2};
-L0(Nearest_Idx_nb,:)  =  D_all_nb{3};
-
-% low-order PHS-RBFs and polynomials near boundaries
-Nearest_Idx_nb =  xy(:,1)>x_max-x_max_dist |xy(:,1)<x_min+x_min_dist*2| xy(:,2)> y_max-y_max_dist  | xy(:,2)<y_min+y_min_dist ;
-Idx = (1:length(xy))';
-Nearest_Idx_nb = Idx(Nearest_Idx_nb);
-xy_nb = xy1(Nearest_Idx_nb,:);
-
-D_all_nb = RBF_PHS_FD_all(xy_nb,xy1,Nearest_Idx(Nearest_Idx_nb,:),cfg.rbf.order_near_boundary,cfg.rbf.poly_degree_main,cfg.rbf.poly_degree_near_boundary);
-
-Dx(Nearest_Idx_nb,:)  =  D_all_nb{1};
-Dy(Nearest_Idx_nb,:)  =  D_all_nb{2};
-L0(Nearest_Idx_nb,:)  =  D_all_nb{3};
-
-%% Setup time-stepping parameters and operators
+%% 8) Setup time-stepping parameters
 nu = cfg.simulation.viscosity;  % Kinematic viscosity (1/Reynolds number)
 dt = cfg.simulation.time_step;  % Time step size
 
-% Use reduced time steps for CI environment to keep tests fast
-Nt = cfg.simulation.num_time_steps;
-if isCI
-    Nt = cfg.simulation.num_time_steps_ci; % Reduced steps for fast CI testing
-end
-
-% Setup Laplacian operator for velocity diffusion
-% Zero out Laplacian on boundary nodes (boundary conditions applied separately)
-L = L0;
-L(length(xy)+1:end,:) = zeros(length(boundary),length(xy1));
-
-% Create implicit diffusion operator for Crank-Nicolson scheme
-% I - (dt*nu/2)*del^2 for implicit half of viscous terms
-L_I = speye(length(xy1))-dt*nu*L*cfg.schemes.crank_nicolson;
-
-% Create separate operators for u and v velocity components
-L_u = L_I;  % Copy base diffusion operator for u-velocity
-L_v = L_I;  % Copy base diffusion operator for v-velocity
-
-% Apply boundary conditions for u-velocity
-L_u((length(xy)+1:length(xy)+length(boundary_y)),:) = Dy_b_0;  % Wall BC: du/dy = 0
-L_u((length(xy)+length(boundary_y)+1:(length(xy)+length(boundary_y)+length(boundary_out))),:) = Dx_b_0;  % Outlet BC: du/dx = 0
-% Apply boundary conditions for v-velocity  
-L_v((length(xy)+length(boundary_y)+1:(length(xy)+length(boundary_y)+length(boundary_out))),:) = Dx_b_0;  % Outlet BC: dv/dx = 0
-
-% Note: Wall and inlet boundaries have Dirichlet conditions (v=0) applied directly
-% Cylinder boundary has no-slip condition (u=v=0) applied directly
-
-clear L_I L
-
-% Precompute LU decompositions for efficient velocity solves
-[LL,UU,pp,qq,rr] = lu(L_u);
-L_u_inv = @(v) (qq*(UU\(LL\(pp*(rr\(v))))));  % u-velocity solver
-
-[LL,UU,pp,qq,rr] = lu(L_v);
-L_v_inv = @(v) (qq*(UU\(LL\(pp*(rr\(v))))));  % v-velocity solver
-
-clear L_u L_v
-
-%% Initialize simulation variables
-% Initial velocity field: uniform flow (u=1, v=0) everywhere except obstacle
-V0 = zeros(length(xy1),1);  % Initial v-velocity (zero everywhere)
-U0 = ones(length(xy1),1);   % Initial u-velocity (unit flow)
-U0(end-length(boundary_obs)+1:end) = zeros(length(boundary_obs),1);  % No-slip on obstacle
-W0 = [U0; V0];  % Combined velocity vector [U; V]
-
-% Storage for velocity history (needed for multi-step time integration)
-W = zeros(length(xy1)*2,Nt+1);
-W(:,1) = W0;  % Store initial condition
-
-% Initial pressure field (zero everywhere)
-p0 = zeros(length(xy1_s),1);
+%% 9) Initialize simulation state
+[W, p0] = init_state(xy1, xy1_s, boundary_obs, Nt);
 
 % Define useful index lengths for boundary handling
 L_B = length(boundary_obs)+length(boundary_in);   % Total special boundaries
@@ -375,7 +139,7 @@ Idx_y_s = length(xy_s)+1: length(xy_s)+length(boundary_y_s);    % Wall pressure 
 Idx_in_s = length(xy1_s)+1-length(boundary_obs_s)-length(boundary_in_s): length(xy1_s)-length(boundary_obs_s);  % Inlet pressure indices
 Idx_out_s = length(xy_s)+1+length(boundary_y_s): length(xy_s)+length(boundary_out_s)+length(boundary_y_s);  % Outlet pressure indices
 
-%% Main time-stepping loop: Fractional Step Method
+%% 10) Main time-stepping loop: Fractional Step Method
 for j = 1:Nt
     if cfg.simulation.show_progress && ~isCI && ~isTest
         disp(['Time step j = ' num2str(j)])
@@ -386,63 +150,22 @@ for j = 1:Nt
         % First few steps: use simple first-order scheme for stability
         W(:,j+1) = W(:,j);  % Copy previous solution for startup
     else
-        % Main fractional step algorithm implemented in NS_2d_cylinder_PHS
+        % Main fractional step algorithm implemented in NS_2d_fractional_step_PHS
         % This performs: 1) Advection-diffusion step with Adams-Bashforth + Crank-Nicolson
         %                2) Pressure correction step to enforce incompressibility
         %                3) Velocity correction using pressure gradient
-            [W(:,j+1),p0] = NS_2d_cylinder_PHS(dt,nu,W(:,j-1),W(:,j),Dy,Dx,L_inv_s,L_u_inv,L_v_inv,L0,L_B,L_B_obs,L_W,L_B_y,length(boundary_s),D0_12_x,D0_12_y,D0_21_x,D0_21_y,Dy_b,Dy_b_1,D0_21_x_obs,D0_21_y_obs,p0,W(:,1));
-        end
-    % Check for numerical instability
-        if isnan(W(1,j+1))
-        warning('Simulation became unstable (NaN detected). Stopping at time step %d', j);
-            break;
-        end
+        [W(:,j+1),p0] = NS_2d_fractional_step_PHS(dt,nu,W(:,j-1),W(:,j),Dy,Dx,L_inv_s,L_u_inv,L_v_inv,L0,L_B,L_B_obs,L_W,L_B_y,length(boundary_s),D0_12_x,D0_12_y,D0_21_x,D0_21_y,Dy_b,Dy_b_1,D0_21_x_obs,D0_21_y_obs,p0,W(:,1));
     end
+    
+    % Check for numerical instability
+    if isnan(W(1,j+1))
+        warning('Simulation became unstable (NaN detected). Stopping at time step %d', j);
+        break;
+    end
+end
 
 % Extract final velocity field for potential continuation
-   W0 = W(:,end);
+W0 = W(:,end);
 
-%% Visualization of final results (if plotting enabled)
-if doPlot
-figure('Name','1/Re = 1e-2');
- colormap(jet)
-
-    % Extract final time step velocity components  
-j = Nt;
-    U = W(1:length(xy1),(j-1)*1+1);              % Final u-velocity
-    V = W(length(xy1)+1:end,(j-1)*1+1);          % Final v-velocity
-    
-    % Plot u-velocity field (perturbation from uniform flow)
-subplot(2,1,1);
-    % Plot u-1 to show deviation from uniform flow (u=1)
-    scatter(x1,y1,cfg.visualization.scatter_size*ones(length(xy1),1),1*(U-1),'.');
-axis equal, axis tight, hold on;
-xlim([x_min x_max]);
-ylim([y_min y_max]);
-    yticks(cfg.visualization.plot_tick_y)
-    xticks(cfg.visualization.plot_tick_x)
-    title('u-velocity perturbation (u-1)');
-ylabel('y');
-xlabel('x');
-shading interp;
-    caxis([-cfg.visualization.color_axis_range cfg.visualization.color_axis_range]);
-
-    % Plot v-velocity field (should be zero in uniform flow)  
-subplot(2,1,2);
-    scatter(x1,y1,cfg.visualization.scatter_size*ones(length(xy1),1),1*V,'.');
-axis equal, axis tight, hold on;
-shading interp;
-
-xlim([x_min x_max]);
-ylim([y_min y_max]);
-    yticks(cfg.visualization.plot_tick_y)
-    xticks(cfg.visualization.plot_tick_x)
-    title('v-velocity');
-
-xlabel('x');
-ylabel('y');
-    set(gca,'Ytick',[]);  % Remove y-tick labels for cleaner appearance
-    caxis([-cfg.visualization.color_axis_range cfg.visualization.color_axis_range]);
-
-    drawnow;  % Update display immediately
-end
+%% 11) Visualization of final results
+visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max);
