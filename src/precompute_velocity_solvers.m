@@ -22,9 +22,7 @@ function [L_u_inv, L_v_inv] = precompute_velocity_solvers(L0, Dy_b_0, Dx_b_0, xy
 nu = cfg.simulation.viscosity; % Kinematic viscosity (1/Reynolds number)
 dt = cfg.simulation.time_step; % Time step size
 
-% Calculate total boundary size
-total_boundary_size = length(boundary_y) + length(boundary_out) + size(xy, 1) - size(xy, 1); % This will be corrected in simulate.m
-% For now, we'll compute this from the grid size
+% Compute this from the grid size
 xy1_size = size(L0, 1); % Total grid size from Laplacian operator
 boundary_size = xy1_size - length(xy);
 

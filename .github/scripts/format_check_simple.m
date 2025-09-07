@@ -29,15 +29,14 @@ for i = 1:length(allFiles)
         continue;
     end
     
-    lines = {};
-    lineNum = 0;
     fileIssues = 0;
+    lineNum = 0;
+    emptyCount = 0;
     
     while ~feof(fid)
         line = fgetl(fid);
         if ischar(line)
             lineNum = lineNum + 1;
-            lines{end+1} = line;
             
             % Check for trailing whitespace
             if ~isempty(line) && (line(end) == ' ' || line(end) == char(9))
@@ -46,7 +45,7 @@ for i = 1:length(allFiles)
             end
             
             % Check for inconsistent indentation (tabs mixed with spaces)
-            if length(line) > 0
+            if ~isempty(line)
                 leadingChars = line(1:find(line ~= ' ' & line ~= char(9), 1, 'first')-1);
                 if ~isempty(leadingChars)
                     if any(leadingChars == ' ') && any(leadingChars == char(9))
@@ -61,24 +60,21 @@ for i = 1:length(allFiles)
                 fprintf('\n  Line %d: Line too long (%d chars)', lineNum, length(line));
                 fileIssues = fileIssues + 1;
             end
+            
+            % Check for multiple consecutive empty lines
+            if isempty(strtrim(line))
+                emptyCount = emptyCount + 1;
+                if emptyCount > 2
+                    fprintf('\n  Line %d: More than 2 consecutive empty lines', lineNum);
+                    fileIssues = fileIssues + 1;
+                    emptyCount = 0; % Reset to avoid multiple warnings for same block
+                end
+            else
+                emptyCount = 0;
+            end
         end
     end
     fclose(fid);
-    
-    % Check for multiple consecutive empty lines
-    emptyCount = 0;
-    for j = 1:length(lines)
-        if isempty(strtrim(lines{j}))
-            emptyCount = emptyCount + 1;
-            if emptyCount > 2
-                fprintf('\n  Line %d: More than 2 consecutive empty lines', j);
-                fileIssues = fileIssues + 1;
-                emptyCount = 0; % Reset to avoid multiple warnings for same block
-            end
-        else
-            emptyCount = 0;
-        end
-    end
     
     % Note: MBeautifier removes trailing empty lines, so we don't check for them
     

@@ -36,7 +36,7 @@ function [idx, D] = knnsearch(varargin)
 
 %% Input parsing and initialization
 [Q, R, K, fident] = parseinputs(varargin{:}); % Parse and validate inputs
-error(nargoutchk(0, 2, nargout)); % Validate number of outputs
+nargoutchk(0, 2); % Validate number of outputs
 
 % Problem dimensions
 [N, M] = size(Q); % N = number of query points, M = dimension
@@ -95,7 +95,7 @@ function [Q, R, K, fident] = parseinputs(varargin)
 %
 % Handles the various input syntax options and validates parameters
 % Validate number of input arguments
-error(nargchk(1, 3, nargin));
+narginchk(1, 3);
 
 % Parse query points (required)
 Q = varargin{1};
