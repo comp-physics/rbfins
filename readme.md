@@ -53,9 +53,8 @@ This repository includes automated testing using GitHub Actions to ensure the co
    - In CI environments, the simulation runs with a reduced number of time steps (20 instead of 5000)
 
 2. **CI Workflows**:
-   - **MATLAB Tests** (`.github/workflows/matlab-tests.yml`): Runs unit tests and generates coverage reports
-   - **MATLAB Lint** (`.github/workflows/matlab-lint.yml`): Checks code quality using MATLAB's Code Analyzer
-   - **MATLAB Formatting** (`.github/workflows/matlab-format.yml`): Ensures consistent code formatting using MBeautifier
+   - **MATLAB CI** (`.github/workflows/matlab.yml`): Runs unit tests and verifies project structure
+   - **MATLAB Code Quality** (`.github/workflows/ci-quality.yml`): Runs code analyzer (linting) and formatting checks
 
 2. **What the Tests Verify**:
    - Basic smoke test to ensure the code runs without errors
@@ -104,10 +103,11 @@ This repository includes automated testing using GitHub Actions to ensure the co
 
 6. **Code Quality Tools**:
    - **MATLAB Code Analyzer**: Run `addpath('.github/scripts'); lint` in MATLAB to check for code issues
-   - **MBeautifier Formatting**: 
+   - **MBeautifier Formatting** (Local only): 
      1. Install MBeautifier: `git clone https://github.com/davidvarga/MBeautifier.git .github/scripts/MBeautifier`
      2. Run formatter: `matlab -batch "addpath('.github/scripts'); format_matlab_code"`
-   - **CI Integration**: All these checks run automatically on pull requests
+     3. Note: MBeautifier requires MATLAB Editor and cannot run in CI environments
+   - **CI Integration**: Linting runs automatically on pull requests; formatting should be done locally
 
 #### Key Components
 
