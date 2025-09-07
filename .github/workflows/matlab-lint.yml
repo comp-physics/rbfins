@@ -19,7 +19,7 @@ jobs:
       - name: Run MATLAB Code Analyzer
         uses: matlab-actions/run-command@v2
         with:
-          command: ci.lint
+          command: addpath('ci'); lint
 
       - name: Upload lint log (optional)
         if: always()

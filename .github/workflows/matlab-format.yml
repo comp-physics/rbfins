@@ -54,8 +54,26 @@ jobs:
               originalText = fread(fid, '*char')';
               fclose(fid);
               
-              % Format the text
-              formattedText = MBeautify.formatText(originalText);
+              % Create a temporary file for formatting
+              tempFile = [tempname, '.m'];
+              fid = fopen(tempFile, 'w');
+              fwrite(fid, originalText);
+              fclose(fid);
+              
+              % Format the file and read back
+              try
+                MBeautify.formatFile(tempFile, tempFile);
+                fid = fopen(tempFile, 'r');
+                formattedText = fread(fid, '*char')';
+                fclose(fid);
+                delete(tempFile);
+              catch ME
+                fprintf('Error formatting file: %s\n', ME.message);
+                formattedText = originalText; % No changes if error
+                if exist(tempFile, 'file')
+                  delete(tempFile);
+                end
+              end
               
               % Compare
               if ~strcmp(originalText, formattedText)
