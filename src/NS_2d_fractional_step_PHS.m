@@ -25,13 +25,11 @@ function [W3, p] = NS_2d_fractional_step_PHS(dt, nu, W1, W2, Dy, Dx, L_inv, L_u_
 % OUTPUTS:
 %   W3      - Updated velocity field [U3; V3] at next time step
 %   p       - Updated pressure field
-
 %% Load numerical scheme coefficients from configuration
 cfg = config();
 ADAMS_BASHFORTH_COEFF_CURRENT = cfg.schemes.adams_bashforth_current; % Coefficient for current time step
 ADAMS_BASHFORTH_COEFF_PREVIOUS = cfg.schemes.adams_bashforth_previous; % Coefficient for previous time step
 CRANK_NICOLSON_COEFF = cfg.schemes.crank_nicolson; % Coefficient for implicit diffusion
-
 %% Extract velocity components from input vectors
 L_W2 = length(W2); % Total length of velocity vector (2 * number of nodes)
 
@@ -42,7 +40,6 @@ V = W2(L_W2/2+1:end); % v-velocity component at current time
 % Previous time step velocities (time level n-1)
 U_1 = W1(1:L_W2/2); % u-velocity component at previous time
 V_1 = W1(L_W2/2+1:end); % v-velocity component at previous time
-
 %% STEP 1: Advection using Adams-Bashforth method
 % Compute nonlinear advection terms: -u*du/dx - v*du/dy, -u*dv/dx - v*dv/dy
 
@@ -71,6 +68,7 @@ V1(L_W+1:L_W+L_B_y) = V(L_W+1:L_W+L_B_y); % Wall BC: v = 0 (no penetration)
 V1(end-L_B+1:end-0) = V(end-L_B+1:end-0); % Obstacle + inlet BCs for v
 %
 %
+
 %% STEP 2: Viscous diffusion using Crank-Nicolson method
 % Treat diffusion terms implicitly for stability: u** = u* + dt*nu*del^2*u
 
@@ -97,6 +95,7 @@ V2(end-L_B_obs_local+1:end) = D0_12_y_obs * p0; % Obstacle BC with pressure: dv/
 % Solve implicit viscous step: (I - dt*nu/2*del^2) * u** = RHS
 U2 = L_u_inv(U2); % Solve for u-velocity after viscous diffusion
 V2 = L_v_inv(V2); % Solve for v-velocity after viscous diffusion
+
 %% STEP 3: Pressure correction to enforce incompressibility
 % Solve Poisson equation for pressure: del^2 p = div(u**)/dt
 
@@ -112,14 +111,12 @@ p = L_inv(F); % Solve using precomputed LU factorization
 % Extract pressure field (remove regularization constraint)
 p = p(1:(length(F0) + L_B_S)); % Remove regularization component
 % F is not used after this point, so we don't need to update it
-
 %% STEP 4: Velocity correction using pressure gradient
 % Apply pressure correction: u^(n+1) = u** - dt * grad(p)
 
 % Subtract pressure gradient from intermediate velocities
 U3 = (U2 - 0) - [(D0_21_x * p); zeros(L_B, 1)]; % u^(n+1) = u** - dt*dp/dx
 V3 = (V2 - 0) - [(D0_21_y * p); zeros(L_B, 1)]; % v^(n+1) = v** - dt*dp/dy
-
 %% Final boundary condition enforcement
 % Apply boundary conditions to final velocity field
 
@@ -130,7 +127,6 @@ U3(L_W+1:L_W+L_B_y) = -(Dy_b * U3) ./ Dy_b_1; % Wall BC: du/dy = 0
 % v-velocity boundary conditions
 V3(L_W+1:L_W+L_B_y) = V(L_W+1:L_W+L_B_y); % Wall BC: v = 0 (no penetration)
 V3(end-L_B+1:end) = V(end-L_B+1:end); % Obstacle + inlet BCs: v = prescribed
-
 %% Assemble final velocity vector for next time step
 W3 = [U3; V3]; % Combined velocity vector [u^(n+1); v^(n+1)]
 
