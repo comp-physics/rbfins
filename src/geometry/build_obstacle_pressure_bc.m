@@ -32,6 +32,6 @@ D = RBF_PHS_FD_all(G.boundary_obs_s, xy1_s, Nearest_Idx_b_obs, ...
 
 % Compute normal derivative: dp/dn = (nx*dp/dx + ny*dp/dy)
 % Uses precomputed unit normal vectors from geometry helper
-Dn1_b_s = G.obs_normals_s(:,1) .* D{1} + G.obs_normals_s(:,2) .* D{2};
+Dn1_b_s = G.obs_normals_s(:, 1) .* D{1} + G.obs_normals_s(:, 2) .* D{2};
 
 end

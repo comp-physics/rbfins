@@ -1,0 +1,10 @@
+{
+  "name": "rbcins",
+  "version": "1.0.0",
+  "description": "RBC Incompressible Navier-Stokes solver",
+  "private": true,
+  "scripts": {
+    "format": "echo \"Use MBeautifier for MATLAB code formatting\"",
+    "format:check": "echo \"Use MBeautifier for MATLAB code formatting\""
+  }
+}

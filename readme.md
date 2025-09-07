@@ -49,8 +49,13 @@ This repository includes automated testing using GitHub Actions to ensure the co
 
 1. **Test Configuration**:
    - Tests are defined in the `tests/TestCylinder.m` file using MATLAB's unit testing framework
-   - The GitHub Actions workflow is configured in `.github/workflows/matlab.yml`
+   - The GitHub Actions workflows are configured in `.github/workflows/`
    - In CI environments, the simulation runs with a reduced number of time steps (20 instead of 5000)
+
+2. **CI Workflows**:
+   - **MATLAB Tests** (`.github/workflows/matlab-tests.yml`): Runs unit tests and generates coverage reports
+   - **MATLAB Lint** (`.github/workflows/matlab-lint.yml`): Checks code quality using MATLAB's Code Analyzer
+   - **MATLAB Formatting** (`.github/workflows/matlab-format.yml`): Ensures consistent code formatting using MBeautifier
 
 2. **What the Tests Verify**:
    - Basic smoke test to ensure the code runs without errors
@@ -96,6 +101,13 @@ This repository includes automated testing using GitHub Actions to ensure the co
 5. **Adding New Tests**:
    - Additional tests can be added to the `tests/TestCylinder.m` file
    - Follow MATLAB's unit testing framework conventions for new test methods
+
+6. **Code Quality Tools**:
+   - **MATLAB Code Analyzer**: Run `addpath('ci'); lint` in MATLAB to check for code issues
+   - **MBeautifier Formatting**: 
+     1. Install MBeautifier: `git clone https://github.com/davidvarga/MBeautifier.git ci/MBeautifier`
+     2. Run formatter: `matlab -batch "addpath('ci'); format_matlab_code"`
+   - **CI Integration**: All these checks run automatically on pull requests
 
 #### Key Components
 

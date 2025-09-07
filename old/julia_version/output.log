@@ -1,0 +1,667 @@
+
+[91756] signal (15): Terminated: 15
+in expression starting at /Users/spencer/Downloads/rbf-matlab/tianyi-latest/julia_version/simulate.jl:275
+fma_llvm at ./floatfuncs.jl:436 [inlined]
+fma at ./floatfuncs.jl:441 [inlined]
+two_mul at ./math.jl:57 [inlined]
+pow_body at ./math.jl:1269
+^ at ./math.jl:1248
+^ at ./math.jl:1204
+_broadcast_getindex_evalf at ./broadcast.jl:709 [inlined]
+_broadcast_getindex at ./broadcast.jl:682 [inlined]
+getindex at ./broadcast.jl:636 [inlined]
+macro expansion at ./broadcast.jl:1004 [inlined]
+macro expansion at ./simdloop.jl:77 [inlined]
+copyto! at ./broadcast.jl:1003 [inlined]
+copyto! at ./broadcast.jl:956 [inlined]
+copy at ./broadcast.jl:928 [inlined]
+materialize at ./broadcast.jl:903 [inlined]
+rbf_phs_fd_all at /Users/spencer/Downloads/rbf-matlab/tianyi-latest/julia_version/RBF_PHS_FD_all.jl:71
+main at /Users/spencer/Downloads/rbf-matlab/tianyi-latest/julia_version/simulate.jl:75
+top-level scope at /Users/spencer/Downloads/rbf-matlab/tianyi-latest/julia_version/simulate.jl:277
+jl_toplevel_eval_flex at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/toplevel.c:925
+jl_toplevel_eval_flex at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/toplevel.c:877
+ijl_toplevel_eval at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/toplevel.c:943 [inlined]
+ijl_toplevel_eval_in at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/toplevel.c:985
+eval at ./boot.jl:385 [inlined]
+include_string at ./loading.jl:2146
+_jl_invoke at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/gf.c:0 [inlined]
+ijl_apply_generic at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/gf.c:3077
+_include at ./loading.jl:2206
+include at ./Base.jl:495
+jfptr_include_46577.1 at /Users/spencer/.julia/juliaup/julia-1.10.10+0.aarch64.apple.darwin14/lib/julia/sys.dylib (unknown line)
+_jl_invoke at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/gf.c:0 [inlined]
+ijl_apply_generic at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/gf.c:3077
+exec_options at ./client.jl:323
+_start at ./client.jl:557
+jfptr__start_83057.1 at /Users/spencer/.julia/juliaup/julia-1.10.10+0.aarch64.apple.darwin14/lib/julia/sys.dylib (unknown line)
+_jl_invoke at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/gf.c:0 [inlined]
+ijl_apply_generic at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/gf.c:3077
+jl_apply at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/./julia.h:1982 [inlined]
+true_main at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/jlapi.c:582
+jl_repl_entrypoint at /Users/julia/.julia/scratchspaces/a66863c6-20e8-4ff4-8a62-49f30b1f605e/agent-cache/default-honeycrisp-XC9YQX9HH2.0/build/default-honeycrisp-XC9YQX9HH2-0/julialang/julia-release-1-dot-10/src/jlapi.c:731
+unknown function (ip: 0x0)
+Allocations: 171734984 (Pool: 171050133; Big: 684851); GC: 291
+  Activating project at `~/Downloads/rbf-matlab/tianyi-latest/julia_version`
+🌊 Julia RBF-FD Navier-Stokes Solver
+==================================================
+
+📋 1. Loading configuration...
+   Reynolds number: 100.0
+   Time step: 0.01
+   Geometry: cylinder
+   Domain: [-8.0, 24.0] × [-8.0, 8.0]
+
+🏗️  2. Generating geometry...
+   Interior velocity nodes: 50640
+   Interior pressure nodes: 50640
+   Boundary nodes:
+     Inlet: 161 (V), 161 (P)
+     Outlet: 161 (V), 161 (P)
+     Walls: 642 (V), 642 (P)
+     Obstacle: 12 (V), 12 (P)
+
+🎯 3. Building RBF-FD stencils...
+   Total V-grid nodes: 51616
+   Total P-grid nodes: 51616
+   Stencil size: 35
+   Built neighbor indices
+
+🔧 4. Building RBF-FD operators...
+Computing RBF-FD weights: node 100 of 51616
+Computing RBF-FD weights: node 200 of 51616
+Computing RBF-FD weights: node 300 of 51616
+Computing RBF-FD weights: node 400 of 51616
+Computing RBF-FD weights: node 500 of 51616
+Computing RBF-FD weights: node 600 of 51616
+Computing RBF-FD weights: node 700 of 51616
+Computing RBF-FD weights: node 800 of 51616
+Computing RBF-FD weights: node 900 of 51616
+Computing RBF-FD weights: node 1000 of 51616
+Computing RBF-FD weights: node 1100 of 51616
+Computing RBF-FD weights: node 1200 of 51616
+Computing RBF-FD weights: node 1300 of 51616
+Computing RBF-FD weights: node 1400 of 51616
+Computing RBF-FD weights: node 1500 of 51616
+Computing RBF-FD weights: node 1600 of 51616
+Computing RBF-FD weights: node 1700 of 51616
+Computing RBF-FD weights: node 1800 of 51616
+Computing RBF-FD weights: node 1900 of 51616
+Computing RBF-FD weights: node 2000 of 51616
+Computing RBF-FD weights: node 2100 of 51616
+Computing RBF-FD weights: node 2200 of 51616
+Computing RBF-FD weights: node 2300 of 51616
+Computing RBF-FD weights: node 2400 of 51616
+Computing RBF-FD weights: node 2500 of 51616
+Computing RBF-FD weights: node 2600 of 51616
+Computing RBF-FD weights: node 2700 of 51616
+Computing RBF-FD weights: node 2800 of 51616
+Computing RBF-FD weights: node 2900 of 51616
+Computing RBF-FD weights: node 3000 of 51616
+Computing RBF-FD weights: node 3100 of 51616
+Computing RBF-FD weights: node 3200 of 51616
+Computing RBF-FD weights: node 3300 of 51616
+Computing RBF-FD weights: node 3400 of 51616
+Computing RBF-FD weights: node 3500 of 51616
+Computing RBF-FD weights: node 3600 of 51616
+Computing RBF-FD weights: node 3700 of 51616
+Computing RBF-FD weights: node 3800 of 51616
+Computing RBF-FD weights: node 3900 of 51616
+Computing RBF-FD weights: node 4000 of 51616
+Computing RBF-FD weights: node 4100 of 51616
+Computing RBF-FD weights: node 4200 of 51616
+Computing RBF-FD weights: node 4300 of 51616
+Computing RBF-FD weights: node 4400 of 51616
+Computing RBF-FD weights: node 4500 of 51616
+Computing RBF-FD weights: node 4600 of 51616
+Computing RBF-FD weights: node 4700 of 51616
+Computing RBF-FD weights: node 4800 of 51616
+Computing RBF-FD weights: node 4900 of 51616
+Computing RBF-FD weights: node 5000 of 51616
+Computing RBF-FD weights: node 5100 of 51616
+Computing RBF-FD weights: node 5200 of 51616
+Computing RBF-FD weights: node 5300 of 51616
+Computing RBF-FD weights: node 5400 of 51616
+Computing RBF-FD weights: node 5500 of 51616
+Computing RBF-FD weights: node 5600 of 51616
+Computing RBF-FD weights: node 5700 of 51616
+Computing RBF-FD weights: node 5800 of 51616
+Computing RBF-FD weights: node 5900 of 51616
+Computing RBF-FD weights: node 6000 of 51616
+Computing RBF-FD weights: node 6100 of 51616
+Computing RBF-FD weights: node 6200 of 51616
+Computing RBF-FD weights: node 6300 of 51616
+Computing RBF-FD weights: node 6400 of 51616
+Computing RBF-FD weights: node 6500 of 51616
+Computing RBF-FD weights: node 6600 of 51616
+Computing RBF-FD weights: node 6700 of 51616
+Computing RBF-FD weights: node 6800 of 51616
+Computing RBF-FD weights: node 6900 of 51616
+Computing RBF-FD weights: node 7000 of 51616
+Computing RBF-FD weights: node 7100 of 51616
+Computing RBF-FD weights: node 7200 of 51616
+Computing RBF-FD weights: node 7300 of 51616
+Computing RBF-FD weights: node 7400 of 51616
+Computing RBF-FD weights: node 7500 of 51616
+Computing RBF-FD weights: node 7600 of 51616
+Computing RBF-FD weights: node 7700 of 51616
+Computing RBF-FD weights: node 7800 of 51616
+Computing RBF-FD weights: node 7900 of 51616
+Computing RBF-FD weights: node 8000 of 51616
+Computing RBF-FD weights: node 8100 of 51616
+Computing RBF-FD weights: node 8200 of 51616
+Computing RBF-FD weights: node 8300 of 51616
+Computing RBF-FD weights: node 8400 of 51616
+Computing RBF-FD weights: node 8500 of 51616
+Computing RBF-FD weights: node 8600 of 51616
+Computing RBF-FD weights: node 8700 of 51616
+Computing RBF-FD weights: node 8800 of 51616
+Computing RBF-FD weights: node 8900 of 51616
+Computing RBF-FD weights: node 9000 of 51616
+Computing RBF-FD weights: node 9100 of 51616
+Computing RBF-FD weights: node 9200 of 51616
+Computing RBF-FD weights: node 9300 of 51616
+Computing RBF-FD weights: node 9400 of 51616
+Computing RBF-FD weights: node 9500 of 51616
+Computing RBF-FD weights: node 9600 of 51616
+Computing RBF-FD weights: node 9700 of 51616
+Computing RBF-FD weights: node 9800 of 51616
+Computing RBF-FD weights: node 9900 of 51616
+Computing RBF-FD weights: node 10000 of 51616
+Computing RBF-FD weights: node 10100 of 51616
+Computing RBF-FD weights: node 10200 of 51616
+Computing RBF-FD weights: node 10300 of 51616
+Computing RBF-FD weights: node 10400 of 51616
+Computing RBF-FD weights: node 10500 of 51616
+Computing RBF-FD weights: node 10600 of 51616
+Computing RBF-FD weights: node 10700 of 51616
+Computing RBF-FD weights: node 10800 of 51616
+Computing RBF-FD weights: node 10900 of 51616
+Computing RBF-FD weights: node 11000 of 51616
+Computing RBF-FD weights: node 11100 of 51616
+Computing RBF-FD weights: node 11200 of 51616
+Computing RBF-FD weights: node 11300 of 51616
+Computing RBF-FD weights: node 11400 of 51616
+Computing RBF-FD weights: node 11500 of 51616
+Computing RBF-FD weights: node 11600 of 51616
+Computing RBF-FD weights: node 11700 of 51616
+Computing RBF-FD weights: node 11800 of 51616
+Computing RBF-FD weights: node 11900 of 51616
+Computing RBF-FD weights: node 12000 of 51616
+Computing RBF-FD weights: node 12100 of 51616
+Computing RBF-FD weights: node 12200 of 51616
+Computing RBF-FD weights: node 12300 of 51616
+Computing RBF-FD weights: node 12400 of 51616
+Computing RBF-FD weights: node 12500 of 51616
+Computing RBF-FD weights: node 12600 of 51616
+Computing RBF-FD weights: node 12700 of 51616
+Computing RBF-FD weights: node 12800 of 51616
+Computing RBF-FD weights: node 12900 of 51616
+Computing RBF-FD weights: node 13000 of 51616
+Computing RBF-FD weights: node 13100 of 51616
+Computing RBF-FD weights: node 13200 of 51616
+Computing RBF-FD weights: node 13300 of 51616
+Computing RBF-FD weights: node 13400 of 51616
+Computing RBF-FD weights: node 13500 of 51616
+Computing RBF-FD weights: node 13600 of 51616
+Computing RBF-FD weights: node 13700 of 51616
+Computing RBF-FD weights: node 13800 of 51616
+Computing RBF-FD weights: node 13900 of 51616
+Computing RBF-FD weights: node 14000 of 51616
+Computing RBF-FD weights: node 14100 of 51616
+Computing RBF-FD weights: node 14200 of 51616
+Computing RBF-FD weights: node 14300 of 51616
+Computing RBF-FD weights: node 14400 of 51616
+Computing RBF-FD weights: node 14500 of 51616
+Computing RBF-FD weights: node 14600 of 51616
+Computing RBF-FD weights: node 14700 of 51616
+Computing RBF-FD weights: node 14800 of 51616
+Computing RBF-FD weights: node 14900 of 51616
+Computing RBF-FD weights: node 15000 of 51616
+Computing RBF-FD weights: node 15100 of 51616
+Computing RBF-FD weights: node 15200 of 51616
+Computing RBF-FD weights: node 15300 of 51616
+Computing RBF-FD weights: node 15400 of 51616
+Computing RBF-FD weights: node 15500 of 51616
+Computing RBF-FD weights: node 15600 of 51616
+Computing RBF-FD weights: node 15700 of 51616
+Computing RBF-FD weights: node 15800 of 51616
+Computing RBF-FD weights: node 15900 of 51616
+Computing RBF-FD weights: node 16000 of 51616
+Computing RBF-FD weights: node 16100 of 51616
+Computing RBF-FD weights: node 16200 of 51616
+Computing RBF-FD weights: node 16300 of 51616
+Computing RBF-FD weights: node 16400 of 51616
+Computing RBF-FD weights: node 16500 of 51616
+Computing RBF-FD weights: node 16600 of 51616
+Computing RBF-FD weights: node 16700 of 51616
+Computing RBF-FD weights: node 16800 of 51616
+Computing RBF-FD weights: node 16900 of 51616
+Computing RBF-FD weights: node 17000 of 51616
+Computing RBF-FD weights: node 17100 of 51616
+Computing RBF-FD weights: node 17200 of 51616
+Computing RBF-FD weights: node 17300 of 51616
+Computing RBF-FD weights: node 17400 of 51616
+Computing RBF-FD weights: node 17500 of 51616
+Computing RBF-FD weights: node 17600 of 51616
+Computing RBF-FD weights: node 17700 of 51616
+Computing RBF-FD weights: node 17800 of 51616
+Computing RBF-FD weights: node 17900 of 51616
+Computing RBF-FD weights: node 18000 of 51616
+Computing RBF-FD weights: node 18100 of 51616
+Computing RBF-FD weights: node 18200 of 51616
+Computing RBF-FD weights: node 18300 of 51616
+Computing RBF-FD weights: node 18400 of 51616
+Computing RBF-FD weights: node 18500 of 51616
+Computing RBF-FD weights: node 18600 of 51616
+Computing RBF-FD weights: node 18700 of 51616
+Computing RBF-FD weights: node 18800 of 51616
+Computing RBF-FD weights: node 18900 of 51616
+Computing RBF-FD weights: node 19000 of 51616
+Computing RBF-FD weights: node 19100 of 51616
+Computing RBF-FD weights: node 19200 of 51616
+Computing RBF-FD weights: node 19300 of 51616
+Computing RBF-FD weights: node 19400 of 51616
+Computing RBF-FD weights: node 19500 of 51616
+Computing RBF-FD weights: node 19600 of 51616
+Computing RBF-FD weights: node 19700 of 51616
+Computing RBF-FD weights: node 19800 of 51616
+Computing RBF-FD weights: node 19900 of 51616
+Computing RBF-FD weights: node 20000 of 51616
+Computing RBF-FD weights: node 20100 of 51616
+Computing RBF-FD weights: node 20200 of 51616
+Computing RBF-FD weights: node 20300 of 51616
+Computing RBF-FD weights: node 20400 of 51616
+Computing RBF-FD weights: node 20500 of 51616
+Computing RBF-FD weights: node 20600 of 51616
+Computing RBF-FD weights: node 20700 of 51616
+Computing RBF-FD weights: node 20800 of 51616
+Computing RBF-FD weights: node 20900 of 51616
+Computing RBF-FD weights: node 21000 of 51616
+Computing RBF-FD weights: node 21100 of 51616
+Computing RBF-FD weights: node 21200 of 51616
+Computing RBF-FD weights: node 21300 of 51616
+Computing RBF-FD weights: node 21400 of 51616
+Computing RBF-FD weights: node 21500 of 51616
+Computing RBF-FD weights: node 21600 of 51616
+Computing RBF-FD weights: node 21700 of 51616
+Computing RBF-FD weights: node 21800 of 51616
+Computing RBF-FD weights: node 21900 of 51616
+Computing RBF-FD weights: node 22000 of 51616
+Computing RBF-FD weights: node 22100 of 51616
+Computing RBF-FD weights: node 22200 of 51616
+Computing RBF-FD weights: node 22300 of 51616
+Computing RBF-FD weights: node 22400 of 51616
+Computing RBF-FD weights: node 22500 of 51616
+Computing RBF-FD weights: node 22600 of 51616
+Computing RBF-FD weights: node 22700 of 51616
+Computing RBF-FD weights: node 22800 of 51616
+Computing RBF-FD weights: node 22900 of 51616
+Computing RBF-FD weights: node 23000 of 51616
+Computing RBF-FD weights: node 23100 of 51616
+Computing RBF-FD weights: node 23200 of 51616
+Computing RBF-FD weights: node 23300 of 51616
+Computing RBF-FD weights: node 23400 of 51616
+Computing RBF-FD weights: node 23500 of 51616
+Computing RBF-FD weights: node 23600 of 51616
+Computing RBF-FD weights: node 23700 of 51616
+Computing RBF-FD weights: node 23800 of 51616
+Computing RBF-FD weights: node 23900 of 51616
+Computing RBF-FD weights: node 24000 of 51616
+Computing RBF-FD weights: node 24100 of 51616
+Computing RBF-FD weights: node 24200 of 51616
+Computing RBF-FD weights: node 24300 of 51616
+Computing RBF-FD weights: node 24400 of 51616
+Computing RBF-FD weights: node 24500 of 51616
+Computing RBF-FD weights: node 24600 of 51616
+Computing RBF-FD weights: node 24700 of 51616
+Computing RBF-FD weights: node 24800 of 51616
+Computing RBF-FD weights: node 24900 of 51616
+Computing RBF-FD weights: node 25000 of 51616
+Computing RBF-FD weights: node 25100 of 51616
+Computing RBF-FD weights: node 25200 of 51616
+Computing RBF-FD weights: node 25300 of 51616
+Computing RBF-FD weights: node 25400 of 51616
+Computing RBF-FD weights: node 25500 of 51616
+Computing RBF-FD weights: node 25600 of 51616
+Computing RBF-FD weights: node 25700 of 51616
+Computing RBF-FD weights: node 25800 of 51616
+Computing RBF-FD weights: node 25900 of 51616
+Computing RBF-FD weights: node 26000 of 51616
+Computing RBF-FD weights: node 26100 of 51616
+Computing RBF-FD weights: node 26200 of 51616
+Computing RBF-FD weights: node 26300 of 51616
+Computing RBF-FD weights: node 26400 of 51616
+Computing RBF-FD weights: node 26500 of 51616
+Computing RBF-FD weights: node 26600 of 51616
+Computing RBF-FD weights: node 26700 of 51616
+Computing RBF-FD weights: node 26800 of 51616
+Computing RBF-FD weights: node 26900 of 51616
+Computing RBF-FD weights: node 27000 of 51616
+Computing RBF-FD weights: node 27100 of 51616
+Computing RBF-FD weights: node 27200 of 51616
+Computing RBF-FD weights: node 27300 of 51616
+Computing RBF-FD weights: node 27400 of 51616
+Computing RBF-FD weights: node 27500 of 51616
+Computing RBF-FD weights: node 27600 of 51616
+Computing RBF-FD weights: node 27700 of 51616
+Computing RBF-FD weights: node 27800 of 51616
+Computing RBF-FD weights: node 27900 of 51616
+Computing RBF-FD weights: node 28000 of 51616
+Computing RBF-FD weights: node 28100 of 51616
+Computing RBF-FD weights: node 28200 of 51616
+Computing RBF-FD weights: node 28300 of 51616
+Computing RBF-FD weights: node 28400 of 51616
+Computing RBF-FD weights: node 28500 of 51616
+Computing RBF-FD weights: node 28600 of 51616
+Computing RBF-FD weights: node 28700 of 51616
+Computing RBF-FD weights: node 28800 of 51616
+Computing RBF-FD weights: node 28900 of 51616
+Computing RBF-FD weights: node 29000 of 51616
+Computing RBF-FD weights: node 29100 of 51616
+Computing RBF-FD weights: node 29200 of 51616
+Computing RBF-FD weights: node 29300 of 51616
+Computing RBF-FD weights: node 29400 of 51616
+Computing RBF-FD weights: node 29500 of 51616
+Computing RBF-FD weights: node 29600 of 51616
+Computing RBF-FD weights: node 29700 of 51616
+Computing RBF-FD weights: node 29800 of 51616
+Computing RBF-FD weights: node 29900 of 51616
+Computing RBF-FD weights: node 30000 of 51616
+Computing RBF-FD weights: node 30100 of 51616
+Computing RBF-FD weights: node 30200 of 51616
+Computing RBF-FD weights: node 30300 of 51616
+Computing RBF-FD weights: node 30400 of 51616
+Computing RBF-FD weights: node 30500 of 51616
+Computing RBF-FD weights: node 30600 of 51616
+Computing RBF-FD weights: node 30700 of 51616
+Computing RBF-FD weights: node 30800 of 51616
+Computing RBF-FD weights: node 30900 of 51616
+Computing RBF-FD weights: node 31000 of 51616
+Computing RBF-FD weights: node 31100 of 51616
+Computing RBF-FD weights: node 31200 of 51616
+Computing RBF-FD weights: node 31300 of 51616
+Computing RBF-FD weights: node 31400 of 51616
+Computing RBF-FD weights: node 31500 of 51616
+Computing RBF-FD weights: node 31600 of 51616
+Computing RBF-FD weights: node 31700 of 51616
+Computing RBF-FD weights: node 31800 of 51616
+Computing RBF-FD weights: node 31900 of 51616
+Computing RBF-FD weights: node 32000 of 51616
+Computing RBF-FD weights: node 32100 of 51616
+Computing RBF-FD weights: node 32200 of 51616
+Computing RBF-FD weights: node 32300 of 51616
+Computing RBF-FD weights: node 32400 of 51616
+Computing RBF-FD weights: node 32500 of 51616
+Computing RBF-FD weights: node 32600 of 51616
+Computing RBF-FD weights: node 32700 of 51616
+Computing RBF-FD weights: node 32800 of 51616
+Computing RBF-FD weights: node 32900 of 51616
+Computing RBF-FD weights: node 33000 of 51616
+Computing RBF-FD weights: node 33100 of 51616
+Computing RBF-FD weights: node 33200 of 51616
+Computing RBF-FD weights: node 33300 of 51616
+Computing RBF-FD weights: node 33400 of 51616
+Computing RBF-FD weights: node 33500 of 51616
+Computing RBF-FD weights: node 33600 of 51616
+Computing RBF-FD weights: node 33700 of 51616
+Computing RBF-FD weights: node 33800 of 51616
+Computing RBF-FD weights: node 33900 of 51616
+Computing RBF-FD weights: node 34000 of 51616
+Computing RBF-FD weights: node 34100 of 51616
+Computing RBF-FD weights: node 34200 of 51616
+Computing RBF-FD weights: node 34300 of 51616
+Computing RBF-FD weights: node 34400 of 51616
+Computing RBF-FD weights: node 34500 of 51616
+Computing RBF-FD weights: node 34600 of 51616
+Computing RBF-FD weights: node 34700 of 51616
+Computing RBF-FD weights: node 34800 of 51616
+Computing RBF-FD weights: node 34900 of 51616
+Computing RBF-FD weights: node 35000 of 51616
+Computing RBF-FD weights: node 35100 of 51616
+Computing RBF-FD weights: node 35200 of 51616
+Computing RBF-FD weights: node 35300 of 51616
+Computing RBF-FD weights: node 35400 of 51616
+Computing RBF-FD weights: node 35500 of 51616
+Computing RBF-FD weights: node 35600 of 51616
+Computing RBF-FD weights: node 35700 of 51616
+Computing RBF-FD weights: node 35800 of 51616
+Computing RBF-FD weights: node 35900 of 51616
+Computing RBF-FD weights: node 36000 of 51616
+Computing RBF-FD weights: node 36100 of 51616
+Computing RBF-FD weights: node 36200 of 51616
+Computing RBF-FD weights: node 36300 of 51616
+Computing RBF-FD weights: node 36400 of 51616
+Computing RBF-FD weights: node 36500 of 51616
+Computing RBF-FD weights: node 36600 of 51616
+Computing RBF-FD weights: node 36700 of 51616
+Computing RBF-FD weights: node 36800 of 51616
+Computing RBF-FD weights: node 36900 of 51616
+Computing RBF-FD weights: node 37000 of 51616
+Computing RBF-FD weights: node 37100 of 51616
+Computing RBF-FD weights: node 37200 of 51616
+Computing RBF-FD weights: node 37300 of 51616
+Computing RBF-FD weights: node 37400 of 51616
+Computing RBF-FD weights: node 37500 of 51616
+Computing RBF-FD weights: node 37600 of 51616
+Computing RBF-FD weights: node 37700 of 51616
+Computing RBF-FD weights: node 37800 of 51616
+Computing RBF-FD weights: node 37900 of 51616
+Computing RBF-FD weights: node 38000 of 51616
+Computing RBF-FD weights: node 38100 of 51616
+Computing RBF-FD weights: node 38200 of 51616
+Computing RBF-FD weights: node 38300 of 51616
+Computing RBF-FD weights: node 38400 of 51616
+Computing RBF-FD weights: node 38500 of 51616
+Computing RBF-FD weights: node 38600 of 51616
+Computing RBF-FD weights: node 38700 of 51616
+Computing RBF-FD weights: node 38800 of 51616
+Computing RBF-FD weights: node 38900 of 51616
+Computing RBF-FD weights: node 39000 of 51616
+Computing RBF-FD weights: node 39100 of 51616
+Computing RBF-FD weights: node 39200 of 51616
+Computing RBF-FD weights: node 39300 of 51616
+Computing RBF-FD weights: node 39400 of 51616
+Computing RBF-FD weights: node 39500 of 51616
+Computing RBF-FD weights: node 39600 of 51616
+Computing RBF-FD weights: node 39700 of 51616
+Computing RBF-FD weights: node 39800 of 51616
+Computing RBF-FD weights: node 39900 of 51616
+Computing RBF-FD weights: node 40000 of 51616
+Computing RBF-FD weights: node 40100 of 51616
+Computing RBF-FD weights: node 40200 of 51616
+Computing RBF-FD weights: node 40300 of 51616
+Computing RBF-FD weights: node 40400 of 51616
+Computing RBF-FD weights: node 40500 of 51616
+Computing RBF-FD weights: node 40600 of 51616
+Computing RBF-FD weights: node 40700 of 51616
+Computing RBF-FD weights: node 40800 of 51616
+Computing RBF-FD weights: node 40900 of 51616
+Computing RBF-FD weights: node 41000 of 51616
+Computing RBF-FD weights: node 41100 of 51616
+Computing RBF-FD weights: node 41200 of 51616
+Computing RBF-FD weights: node 41300 of 51616
+Computing RBF-FD weights: node 41400 of 51616
+Computing RBF-FD weights: node 41500 of 51616
+Computing RBF-FD weights: node 41600 of 51616
+Computing RBF-FD weights: node 41700 of 51616
+Computing RBF-FD weights: node 41800 of 51616
+Computing RBF-FD weights: node 41900 of 51616
+Computing RBF-FD weights: node 42000 of 51616
+Computing RBF-FD weights: node 42100 of 51616
+Computing RBF-FD weights: node 42200 of 51616
+Computing RBF-FD weights: node 42300 of 51616
+Computing RBF-FD weights: node 42400 of 51616
+Computing RBF-FD weights: node 42500 of 51616
+Computing RBF-FD weights: node 42600 of 51616
+Computing RBF-FD weights: node 42700 of 51616
+Computing RBF-FD weights: node 42800 of 51616
+Computing RBF-FD weights: node 42900 of 51616
+Computing RBF-FD weights: node 43000 of 51616
+Computing RBF-FD weights: node 43100 of 51616
+Computing RBF-FD weights: node 43200 of 51616
+Computing RBF-FD weights: node 43300 of 51616
+Computing RBF-FD weights: node 43400 of 51616
+Computing RBF-FD weights: node 43500 of 51616
+Computing RBF-FD weights: node 43600 of 51616
+Computing RBF-FD weights: node 43700 of 51616
+Computing RBF-FD weights: node 43800 of 51616
+Computing RBF-FD weights: node 43900 of 51616
+Computing RBF-FD weights: node 44000 of 51616
+Computing RBF-FD weights: node 44100 of 51616
+Computing RBF-FD weights: node 44200 of 51616
+Computing RBF-FD weights: node 44300 of 51616
+Computing RBF-FD weights: node 44400 of 51616
+Computing RBF-FD weights: node 44500 of 51616
+Computing RBF-FD weights: node 44600 of 51616
+Computing RBF-FD weights: node 44700 of 51616
+Computing RBF-FD weights: node 44800 of 51616
+Computing RBF-FD weights: node 44900 of 51616
+Computing RBF-FD weights: node 45000 of 51616
+Computing RBF-FD weights: node 45100 of 51616
+Computing RBF-FD weights: node 45200 of 51616
+Computing RBF-FD weights: node 45300 of 51616
+Computing RBF-FD weights: node 45400 of 51616
+Computing RBF-FD weights: node 45500 of 51616
+Computing RBF-FD weights: node 45600 of 51616
+Computing RBF-FD weights: node 45700 of 51616
+Computing RBF-FD weights: node 45800 of 51616
+Computing RBF-FD weights: node 45900 of 51616
+Computing RBF-FD weights: node 46000 of 51616
+Computing RBF-FD weights: node 46100 of 51616
+Computing RBF-FD weights: node 46200 of 51616
+Computing RBF-FD weights: node 46300 of 51616
+Computing RBF-FD weights: node 46400 of 51616
+Computing RBF-FD weights: node 46500 of 51616
+Computing RBF-FD weights: node 46600 of 51616
+Computing RBF-FD weights: node 46700 of 51616
+Computing RBF-FD weights: node 46800 of 51616
+Computing RBF-FD weights: node 46900 of 51616
+Computing RBF-FD weights: node 47000 of 51616
+Computing RBF-FD weights: node 47100 of 51616
+Computing RBF-FD weights: node 47200 of 51616
+Computing RBF-FD weights: node 47300 of 51616
+Computing RBF-FD weights: node 47400 of 51616
+Computing RBF-FD weights: node 47500 of 51616
+Computing RBF-FD weights: node 47600 of 51616
+Computing RBF-FD weights: node 47700 of 51616
+Computing RBF-FD weights: node 47800 of 51616
+Computing RBF-FD weights: node 47900 of 51616
+Computing RBF-FD weights: node 48000 of 51616
+Computing RBF-FD weights: node 48100 of 51616
+Computing RBF-FD weights: node 48200 of 51616
+Computing RBF-FD weights: node 48300 of 51616
+Computing RBF-FD weights: node 48400 of 51616
+Computing RBF-FD weights: node 48500 of 51616
+Computing RBF-FD weights: node 48600 of 51616
+Computing RBF-FD weights: node 48700 of 51616
+Computing RBF-FD weights: node 48800 of 51616
+Computing RBF-FD weights: node 48900 of 51616
+Computing RBF-FD weights: node 49000 of 51616
+Computing RBF-FD weights: node 49100 of 51616
+Computing RBF-FD weights: node 49200 of 51616
+Computing RBF-FD weights: node 49300 of 51616
+Computing RBF-FD weights: node 49400 of 51616
+Computing RBF-FD weights: node 49500 of 51616
+Computing RBF-FD weights: node 49600 of 51616
+Computing RBF-FD weights: node 49700 of 51616
+Computing RBF-FD weights: node 49800 of 51616
+Computing RBF-FD weights: node 49900 of 51616
+Computing RBF-FD weights: node 50000 of 51616
+Computing RBF-FD weights: node 50100 of 51616
+Computing RBF-FD weights: node 50200 of 51616
+Computing RBF-FD weights: node 50300 of 51616
+Computing RBF-FD weights: node 50400 of 51616
+Computing RBF-FD weights: node 50500 of 51616
+Computing RBF-FD weights: node 50600 of 51616
+Computing RBF-FD weights: node 50700 of 51616
+Computing RBF-FD weights: node 50800 of 51616
+Computing RBF-FD weights: node 50900 of 51616
+Computing RBF-FD weights: node 51000 of 51616
+Computing RBF-FD weights: node 51100 of 51616
+Computing RBF-FD weights: node 51200 of 51616
+Computing RBF-FD weights: node 51300 of 51616
+Computing RBF-FD weights: node 51400 of 51616
+Computing RBF-FD weights: node 51500 of 51616
+Computing RBF-FD weights: node 51600 of 51616
+Computing RBF-FD weights: node 100 of 51616
+Computing RBF-FD weights: node 200 of 51616
+Computing RBF-FD weights: node 300 of 51616
+Computing RBF-FD weights: node 400 of 51616
+Computing RBF-FD weights: node 500 of 51616
+Computing RBF-FD weights: node 600 of 51616
+Computing RBF-FD weights: node 700 of 51616
+Computing RBF-FD weights: node 800 of 51616
+Computing RBF-FD weights: node 900 of 51616
+Computing RBF-FD weights: node 1000 of 51616
+Computing RBF-FD weights: node 1100 of 51616
+Computing RBF-FD weights: node 1200 of 51616
+Computing RBF-FD weights: node 1300 of 51616
+Computing RBF-FD weights: node 1400 of 51616
+Computing RBF-FD weights: node 1500 of 51616
+Computing RBF-FD weights: node 1600 of 51616
+Computing RBF-FD weights: node 1700 of 51616
+Computing RBF-FD weights: node 1800 of 51616
+Computing RBF-FD weights: node 1900 of 51616
+Computing RBF-FD weights: node 2000 of 51616
+Computing RBF-FD weights: node 2100 of 51616
+Computing RBF-FD weights: node 2200 of 51616
+Computing RBF-FD weights: node 2300 of 51616
+Computing RBF-FD weights: node 2400 of 51616
+Computing RBF-FD weights: node 2500 of 51616
+Computing RBF-FD weights: node 2600 of 51616
+Computing RBF-FD weights: node 2700 of 51616
+Computing RBF-FD weights: node 2800 of 51616
+Computing RBF-FD weights: node 2900 of 51616
+Computing RBF-FD weights: node 3000 of 51616
+Computing RBF-FD weights: node 3100 of 51616
+Computing RBF-FD weights: node 3200 of 51616
+Computing RBF-FD weights: node 3300 of 51616
+Computing RBF-FD weights: node 3400 of 51616
+Computing RBF-FD weights: node 3500 of 51616
+Computing RBF-FD weights: node 3600 of 51616
+Computing RBF-FD weights: node 3700 of 51616
+Computing RBF-FD weights: node 3800 of 51616
+Computing RBF-FD weights: node 3900 of 51616
+Computing RBF-FD weights: node 4000 of 51616
+Computing RBF-FD weights: node 4100 of 51616
+Computing RBF-FD weights: node 4200 of 51616
+Computing RBF-FD weights: node 4300 of 51616
+Computing RBF-FD weights: node 4400 of 51616
+Computing RBF-FD weights: node 4500 of 51616
+Computing RBF-FD weights: node 4600 of 51616
+Computing RBF-FD weights: node 4700 of 51616
+Computing RBF-FD weights: node 4800 of 51616
+Computing RBF-FD weights: node 4900 of 51616
+Computing RBF-FD weights: node 5000 of 51616
+Computing RBF-FD weights: node 5100 of 51616
+Computing RBF-FD weights: node 5200 of 51616
+Computing RBF-FD weights: node 5300 of 51616
+Computing RBF-FD weights: node 5400 of 51616
+Computing RBF-FD weights: node 5500 of 51616
+Computing RBF-FD weights: node 5600 of 51616
+Computing RBF-FD weights: node 5700 of 51616
+Computing RBF-FD weights: node 5800 of 51616
+Computing RBF-FD weights: node 5900 of 51616
+Computing RBF-FD weights: node 6000 of 51616
+Computing RBF-FD weights: node 6100 of 51616
+Computing RBF-FD weights: node 6200 of 51616
+Computing RBF-FD weights: node 6300 of 51616
+Computing RBF-FD weights: node 6400 of 51616
+Computing RBF-FD weights: node 6500 of 51616
+Computing RBF-FD weights: node 6600 of 51616
+Computing RBF-FD weights: node 6700 of 51616
+Computing RBF-FD weights: node 6800 of 51616
+Computing RBF-FD weights: node 6900 of 51616
+Computing RBF-FD weights: node 7000 of 51616
+Computing RBF-FD weights: node 7100 of 51616
+Computing RBF-FD weights: node 7200 of 51616
+Computing RBF-FD weights: node 7300 of 51616
+Computing RBF-FD weights: node 7400 of 51616
+Computing RBF-FD weights: node 7500 of 51616
+Computing RBF-FD weights: node 7600 of 51616
+Computing RBF-FD weights: node 7700 of 51616
+Computing RBF-FD weights: node 7800 of 51616
+Computing RBF-FD weights: node 7900 of 51616
+Computing RBF-FD weights: node 8000 of 51616
+Computing RBF-FD weights: node 8100 of 51616

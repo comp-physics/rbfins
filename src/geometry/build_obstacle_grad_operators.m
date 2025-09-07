@@ -22,7 +22,7 @@ function [D0_21_x_obs, D0_21_y_obs] = build_obstacle_grad_operators(G, xy1_s, cf
     cfg.rbf.order_boundary, cfg.rbf.poly_degree_boundary, cfg.rbf.derivative_order);
 
 % Extract x and y gradient operators
-D0_21_x_obs = D0_21_all_obs{1};  % x-gradient operator (dp/dx)
-D0_21_y_obs = D0_21_all_obs{2};  % y-gradient operator (dp/dy)
+D0_21_x_obs = D0_21_all_obs{1}; % x-gradient operator (dp/dx)
+D0_21_y_obs = D0_21_all_obs{2}; % y-gradient operator (dp/dy)
 
 end

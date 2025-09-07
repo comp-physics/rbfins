@@ -1,0 +1,33 @@
+name: MATLAB tests
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "tests/**"
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+
+      - name: Run tests
+        uses: matlab-actions/run-tests@v2
+        with:
+          source-folder: src
+          select-by-folder: tests
+          test-results-junit: test-results/results.xml
+          code-coverage-cobertura: coverage/coverage.xml
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: matlab-test-and-coverage
+          path: |
+            test-results
+            coverage/coverage.xml
