@@ -171,3 +171,4 @@ classdef TestGolden < matlab.unittest.TestCase
         end
     end
 end
+

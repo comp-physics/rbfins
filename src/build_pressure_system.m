@@ -98,3 +98,4 @@ P.L_inv_s = @(v) (qq * (UU \ (LL \ (pp * (rr \ (v)))))); % Pressure solver funct
 [P.D0_21_x_obs, P.D0_21_y_obs] = build_obstacle_grad_operators(G, xy1_s, cfg);
 
 end
+

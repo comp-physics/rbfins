@@ -131,3 +131,4 @@ V3(end-L_B+1:end) = V(end-L_B+1:end); % Obstacle + inlet BCs: v = prescribed
 W3 = [U3; V3]; % Combined velocity vector [u^(n+1); v^(n+1)]
 
 end
+

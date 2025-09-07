@@ -184,3 +184,4 @@ G.idx_far_boundaries_V = idx_far_boundaries_V; % Velocity nodes far from boundar
 G.idx_far_boundaries_P = idx_far_boundaries_P; % Pressure nodes far from boundaries
 
 end
+

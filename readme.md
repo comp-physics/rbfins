@@ -109,7 +109,7 @@ This repository includes automated testing using GitHub Actions to ensure the co
        1. Install MBeautifier: `git clone https://github.com/davidvarga/MBeautifier.git .github/scripts/MBeautifier`
        2. Run formatter: `matlab -batch "addpath('.github/scripts'); format_matlab_code"`
      - Note: MBeautifier requires MATLAB Editor and cannot run in CI environments
-   - **CI Integration**: Linting runs automatically on pull requests; formatting should be done locally
+   - **CI Integration**: Both linting and basic formatting checks run automatically on pull requests; full formatting should be done locally
 
 #### Key Components
 

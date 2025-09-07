@@ -218,3 +218,4 @@ Dxy = sparse(Idx_x, Idx_y, Wxy, NxNy1, NxNy2); % Mixed derivative
 D_all = {Dx, Dy, L, Dxx, Dyy, Dxy};
 
 end
+
