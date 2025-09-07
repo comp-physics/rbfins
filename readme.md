@@ -103,10 +103,10 @@ This repository includes automated testing using GitHub Actions to ensure the co
    - Follow MATLAB's unit testing framework conventions for new test methods
 
 6. **Code Quality Tools**:
-   - **MATLAB Code Analyzer**: Run `addpath('ci'); lint` in MATLAB to check for code issues
+   - **MATLAB Code Analyzer**: Run `addpath('.github/scripts'); lint` in MATLAB to check for code issues
    - **MBeautifier Formatting**: 
-     1. Install MBeautifier: `git clone https://github.com/davidvarga/MBeautifier.git ci/MBeautifier`
-     2. Run formatter: `matlab -batch "addpath('ci'); format_matlab_code"`
+     1. Install MBeautifier: `git clone https://github.com/davidvarga/MBeautifier.git .github/scripts/MBeautifier`
+     2. Run formatter: `matlab -batch "addpath('.github/scripts'); format_matlab_code"`
    - **CI Integration**: All these checks run automatically on pull requests
 
 #### Key Components

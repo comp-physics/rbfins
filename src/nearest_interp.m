@@ -31,6 +31,7 @@ function [Nearest_Idx] = nearest_interp(xy, xy_s, k, varargin)
 %       Submitted to Journal of Computational Physics
 %
 % AUTHORS: T. Chu (tic173@ucsd.edu), O. T. Schmidt (oschmidt@ucsd.edu)
+
 %% Initialize variables and parameters
 X1 = xy(:, 1); % Extract x-coordinates (not used but kept for consistency)
 NxNy1 = length(X1); % Number of target nodes
@@ -41,6 +42,7 @@ if nargin == 4
 else
     R0 = 1e-5; % Default search radius (very small for coincident nodes)
 end
+
 %% Initialize output array and begin neighbor search
 Nearest_Idx = zeros(NxNy1, k); % Preallocate output matrix
 
@@ -60,6 +62,7 @@ if show_progress && ~isCI && ~isTest
     disp('Finding nearest neighbors for RBF-FD stencils...')
     disp(['Target: ', num2str(k), ' neighbors per node for ', num2str(NxNy1), ' nodes'])
 end
+
 %% Main loop: Find k nearest neighbors for each target node
 for j = 1:NxNy1
     % Progress indicator for large problems
@@ -73,6 +76,7 @@ for j = 1:NxNy1
     % Compute squared distances from target node to all source nodes
     r2_j = (xy_s - Node_j).^2; % Element-wise squared differences
     r2_j = r2_j(:, 1) + r2_j(:, 2); % Sum to get squared Euclidean distances
+
     %% Filter source nodes within search radius
     % Find candidate neighbors within initial search radius
     Idx_n = find(r2_j < R0);
@@ -81,6 +85,7 @@ for j = 1:NxNy1
     if length(Idx_n) < k
         Idx_n = find(r2_j < 10^2); % Use large radius to include all nodes if needed
     end
+
     %% Find k nearest neighbors within candidate set
     % Use efficient knnsearch on reduced candidate set
     Idx_0 = knnsearch(Node_j, xy_s(Idx_n, :), k);

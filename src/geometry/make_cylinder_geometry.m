@@ -15,6 +15,7 @@ function G = make_cylinder_geometry(cfg)
 %       .boundary_in_s, .boundary_out_s, .boundary_y_s, .boundary_obs_s - Pressure boundary nodes
 %       .radius - Cylinder radius (needed for normal vector calculations)
 %       .obs_normals_s - Unit normal vectors at obstacle boundary nodes
+
 %% Extract domain and mesh parameters
 x_min = cfg.domain.x_min;
 x_max = cfg.domain.x_max;
@@ -28,6 +29,7 @@ a1 = cfg.mesh.refine_a1;
 b1 = cfg.mesh.refine_b1;
 a2 = cfg.mesh.refine_a2;
 b2 = cfg.mesh.refine_b2;
+
 %% Define cylinder-specific distance functions for DistMesh
 % fd: Signed distance function for domain geometry (rectangle minus circle)
 fd = @(p) ddiff(drectangle(p, x_min, x_max, y_min, y_max), dcircle(p, 0, 0, radius));
@@ -38,9 +40,11 @@ fd1 = @(p) min(a1+b1*abs(dcircle(p, 0, 0, radius)), a2+b2*abs(dpoly(p, [radius, 
 
 % Define fixed corner points to maintain rectangular domain shape
 fix = [x_min, y_min; x_min, y_max; x_max, y_max; x_max, y_min];
+
 %% Generate triangular mesh using DistMesh algorithm
 % xy_s: nodes for pressure (P-grid), xt: triangle connectivity
 [xy_s, xt] = distmesh2d(fd, fd1, dist, [x_min, y_min; x_max, y_max], fix);
+
 %% Generate velocity grid nodes (V-grid) by adding edge midpoints
 % This creates a staggered grid arrangement for better pressure-velocity coupling
 xy = zeros(length(xt)*cfg.mesh.edge_multiplier, 2);
@@ -51,6 +55,7 @@ for j = 1:length(xt)
     xy((j - 1)*cfg.mesh.edge_multiplier+3, :) = (xy_s(xt(j, 2), :) + xy_s(xt(j, 3), :)) / 2; % Edge 2-3
 end
 xy = unique(xy, 'rows'); % Remove duplicate nodes
+
 %% Extract and classify boundary nodes for pressure grid (P-grid)
 % Remove corner nodes first to avoid duplicate boundary classification
 idx_corners = (xy_s(:, 1) < x_min + eps & xy_s(:, 2) < y_min + eps) | ...
@@ -78,6 +83,7 @@ xy_s(idx_b_out, :) = [];
 idx_b_c = xy_s(:, 1).^2 + xy_s(:, 2).^2 < (radius + eps)^2;
 boundary_obs_s = xy_s(idx_b_c, :);
 xy_s(idx_b_c, :) = [];
+
 %% Extract and classify boundary nodes for velocity grid (V-grid)
 % Extract inlet boundary nodes
 idx_b_in = xy(:, 1) < x_min + eps;
@@ -98,9 +104,11 @@ xy(idx_b_out, :) = [];
 idx_b_c = xy(:, 1).^2 + xy(:, 2).^2 < (radius + eps)^2;
 boundary_obs = xy(idx_b_c, :);
 xy(idx_b_c, :) = [];
+
 %% Compute obstacle normal vectors for pressure boundary conditions
 % For cylinder: normal vector at point (x,y) is [x,y]/radius (outward pointing)
 obs_normals_s = boundary_obs_s ./ radius; % Unit normals: [x,y]/radius
+
 %% Precompute near-obstacle node indices for special RBF treatment
 % Distance threshold for near-obstacle treatment
 r_dist = cfg.mesh.refine_a2 * cfg.mesh.edge_multiplier;
@@ -134,6 +142,7 @@ idx_far_boundaries_P = xy_s(:, 1).^2 + xy_s(:, 2).^2 > (radius + r_dist)^2 & ...
     xy_s(:, 2) < y_max - y_max_dist & ...
     xy_s(:, 2) > y_min + y_min_dist & ...
     xy_s(:, 1) < x_max - x_max_dist;
+
 %% Assemble geometry structure
 G.xy = xy; % Interior velocity nodes
 G.xy_s = xy_s; % Interior pressure nodes

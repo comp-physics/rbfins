@@ -1,14 +1,18 @@
 name: MATLAB formatting
 
 on:
-  pull_request:
-    paths:
-      - "src/**"
-      - "tests/**"
   push:
     paths:
       - "src/**"
       - "tests/**"
+      - ".github/scripts/**"
+      - ".github/workflows/matlab-format.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - ".github/scripts/**"
+      - ".github/workflows/matlab-format.yml"
 
 jobs:
   format-check:
@@ -22,18 +26,18 @@ jobs:
       - name: Install MBeautifier
         run: |
           git clone https://github.com/davidvarga/MBeautifier.git
-          mkdir -p ci/MBeautifier
-          cp -r MBeautifier/* ci/MBeautifier/
+          mkdir -p .github/scripts/MBeautifier
+          cp -r MBeautifier/* .github/scripts/MBeautifier/
 
       - name: Create formatting script
         run: |
-          cat > ci/format_check.m << 'EOF'
+          cat > .github/scripts/format_check.m << 'EOF'
           function format_check()
             % Add MBeautifier to path
-            addpath(fullfile('ci', 'MBeautifier'));
+            addpath(fullfile('.github', 'scripts', 'MBeautifier'));
             
             % Initialize MBeautifier
-            addpath(genpath(fullfile('ci', 'MBeautifier')));
+            addpath(genpath(fullfile('.github', 'scripts', 'MBeautifier')));
             
             % Get all MATLAB files
             srcFiles = dir('src/**/*.m');
@@ -97,4 +101,4 @@ jobs:
       - name: Run formatting check
         uses: matlab-actions/run-command@v2
         with:
-          command: addpath('ci'); format_check
+          command: addpath('.github/scripts'); format_check

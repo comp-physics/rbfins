@@ -34,7 +34,7 @@ classdef TestCylinderResults < matlab.unittest.TestCase
                     testCase.verifyFalse(has_inf, 'Final state should not contain Inf values');
 
                     % Check that velocity components have reasonable values
-                    
+
                     % Extract U and V from the final state
                     U = evalin('base', 'W(1:floor(length(W)/2),end)');
                     V = evalin('base', 'W(floor(length(W)/2)+1:end,end)');

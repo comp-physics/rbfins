@@ -5,14 +5,14 @@ function format_matlab_code()
 % using MBeautifier. It requires MBeautifier to be installed in ci/MBeautifier.
 %
 % To use:
-% 1. Clone MBeautifier: git clone https://github.com/davidvarga/MBeautifier.git ci/MBeautifier
-% 2. Run this script: matlab -batch "addpath('ci'); format_matlab_code"
+% 1. Clone MBeautifier: git clone https://github.com/davidvarga/MBeautifier.git .github/scripts/MBeautifier
+% 2. Run this script: matlab -batch "addpath('.github/scripts'); format_matlab_code"
 
 % Add MBeautifier to path
-addpath(fullfile('ci', 'MBeautifier'));
+addpath(fullfile('.github', 'scripts', 'MBeautifier'));
 
 % Initialize MBeautifier
-addpath(genpath(fullfile('ci', 'MBeautifier')));
+addpath(genpath(fullfile('.github', 'scripts', 'MBeautifier')));
 
 % Get all MATLAB files
 srcFiles = dir('src/**/*.m');

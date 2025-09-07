@@ -5,7 +5,14 @@ on:
     paths:
       - "src/**"
       - "tests/**"
+      - ".github/scripts/**"
+      - ".github/workflows/matlab-lint.yml"
   pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - ".github/scripts/**"
+      - ".github/workflows/matlab-lint.yml"
 
 jobs:
   lint:
@@ -19,12 +26,12 @@ jobs:
       - name: Run MATLAB Code Analyzer
         uses: matlab-actions/run-command@v2
         with:
-          command: addpath('ci'); lint
+          command: addpath('.github/scripts'); lint
 
       - name: Upload lint log (optional)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: matlab-lint-log
-          path: ci/lint.log
+          path: .github/scripts/lint.log
           if-no-files-found: ignore

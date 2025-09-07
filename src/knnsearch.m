@@ -33,6 +33,7 @@ function [idx, D] = knnsearch(varargin)
 %
 % AUTHOR: Yi Cao, Cranfield University, 25 March 2008
 % REFERENCE: Used in RBF-FD method for mesh-free discretization
+
 %% Input parsing and initialization
 [Q, R, K, fident] = parseinputs(varargin{:}); % Parse and validate inputs
 error(nargoutchk(0, 2, nargout)); % Validate number of outputs
@@ -44,10 +45,8 @@ L = size(R, 1); % L = number of reference points
 % Preallocate output arrays
 idx = zeros(N, K); % Indices of nearest neighbors
 D = idx; % Distances to nearest neighbors (same size)
-
 %% Main search algorithm
 if K == 1
-
     %% Single nearest neighbor search (optimized)
     for k = 1:N
         d = zeros(L, 1); % Initialize squared distance array
@@ -66,7 +65,6 @@ if K == 1
         [D(k), idx(k)] = min(d); % Minimum distance and its index
     end
 else
-
     %% Multiple nearest neighbors search (requires sorting)
     for k = 1:N
         d = zeros(L, 1); % Initialize squared distance array
@@ -87,7 +85,6 @@ else
         D(k, :) = s(1:K); % Store corresponding distances
     end
 end
-
 %% Convert squared distances to actual distances if requested
 if nargout > 1
     D = sqrt(D); % Take square root to get Euclidean distances

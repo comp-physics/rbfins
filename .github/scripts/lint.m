@@ -1,5 +1,6 @@
 function lint
 % Lint MATLAB code using Code Analyzer.
+% This function checks all MATLAB files for code quality issues.
 folders = {'src','tests'};
 % Ignore common issues that are less critical for CI
 % CABE:    Cyclomatic complexity warnings
@@ -28,9 +29,9 @@ ignoreIDs = {
     'FNCOLND';
     'USENS'
 };
-logFile = fullfile('ci','lint.log');
-if ~exist('ci','dir')
-    mkdir('ci');
+logFile = fullfile('.github','scripts','lint.log');
+if ~exist(fullfile('.github','scripts'),'dir')
+    mkdir(fullfile('.github','scripts'));
 end
 fid = fopen(logFile,'w');
 
@@ -58,6 +59,6 @@ end
 
 fclose(fid);
 if hasIssues
-    error('Code Analyzer found issues. See ci/lint.log.');
+    error('Code Analyzer found issues. See .github/scripts/lint.log.');
 end
 end
