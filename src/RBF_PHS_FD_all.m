@@ -36,6 +36,7 @@ function [D_all] = RBF_PHS_FD_all(xy1, xy_s, Nearest_Idx, k, m, d)
 %       Submitted to Journal of Computational Physics
 %
 % AUTHORS: T. Chu (tic173@ucsd.edu), O. T. Schmidt (oschmidt@ucsd.edu)
+
 %% Initialize variables and storage arrays
 X1 = xy1(:, 1); % Extract x-coordinates of target nodes
 NxNy1 = length(X1); % Number of target nodes (where derivatives are evaluated)
@@ -49,7 +50,6 @@ weight_L = zeros(NxNy1, k); % Weights for Laplacian operator
 weight_xx = zeros(NxNy1, k); % Weights for d^2/dx^2 operator
 weight_yy = zeros(NxNy1, k); % Weights for d^2/dy^2 operator
 weight_xy = zeros(NxNy1, k); % Weights for d^2/dxdy operator
-
 %% Main loop: Compute RBF-FD weights for each target node
 % Process each target node to build local RBF-FD stencils
 
@@ -70,11 +70,9 @@ for m1 = 1:NxNy1
     if mod(m1, 100) == 0 && show_progress && ~isCI && ~isTest
         disp(['Computing RBF-FD weights: node ', num2str(m1), ' of ', num2str(NxNy1)])
     end
-
     %% Extract local stencil and evaluation point
     xk1 = xy_s(Nearest_Idx(m1, 1:k), :); % Local stencil: k nearest source nodes
     xe1 = xy1(m1, :); % Current target node (evaluation point)
-
     %% Coordinate transformation: translate and scale for numerical stability
 
     % Translate stencil so evaluation point is at origin
@@ -90,7 +88,6 @@ for m1 = 1:NxNy1
 
     x = x / scale_x; % Scaled x-coordinates
     y = y / scale_y; % Scaled y-coordinates
-
     %% Build RBF interpolation matrix and derivative operators
 
     % Construct PHS-RBF interpolation matrix: A(i,j) = ||x_i - x_j||^m
@@ -118,7 +115,6 @@ for m1 = 1:NxNy1
             L0(j, 6) = 0; % d^2/dxdy = 0 at origin
         end
     end
-
     %% Polynomial augmentation for enhanced accuracy
 
     if d == -1 % Pure RBF case (no polynomial augmentation)
@@ -164,6 +160,7 @@ for m1 = 1:NxNy1
         L = [L0; L1]; % Combined RHS (RBF + polynomial derivatives)
 
     end
+
     %% Solve linear system for RBF-FD weights
 
     % Ensure matrix is symmetric (numerical symmetry)
@@ -183,7 +180,6 @@ for m1 = 1:NxNy1
 
     % Extract RBF weights (ignore polynomial constraint multipliers)
     w = W(1:k, :); % Only first k rows correspond to RBF weights
-
     %% Scale weights back to original coordinate system
     % Apply inverse coordinate scaling to get weights in physical coordinates
     weight_x(m1, 1:k) = w(:, 1) / scale_x; % d/dx weights
@@ -195,7 +191,6 @@ for m1 = 1:NxNy1
 
 
 end
-
 %% Assemble global sparse differentiation matrices
 % Convert local RBF-FD weights into global sparse matrices
 
