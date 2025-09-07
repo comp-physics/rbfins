@@ -24,4 +24,3 @@ switch lower(cfg.geometry.type)
 end
 
 end
-

@@ -35,4 +35,3 @@ end
 fprintf('MATLAB path set up for tests\n');
 
 end
-

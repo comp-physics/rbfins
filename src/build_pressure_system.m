@@ -32,7 +32,8 @@ k = cfg.rbf.stencil_size_main;
 Nearest_Idx_s = nearest_interp(xy1_s, xy1_s, k);
 
 % Generate Laplacian operator for pressure Poisson equation (P-grid to P-grid)
-[D_s_all] = RBF_PHS_FD_all(xy_s, xy1_s, Nearest_Idx_s(1:length(xy_s), :), cfg.rbf.order_main, cfg.rbf.poly_degree_main, cfg.rbf.laplacian_order);
+[D_s_all] = RBF_PHS_FD_all(xy_s, xy1_s, Nearest_Idx_s(1:length(xy_s), :), ...
+    cfg.rbf.order_main, cfg.rbf.poly_degree_main, cfg.rbf.laplacian_order);
 P.L_s = D_s_all{3}; % Extract Laplacian operator (del^2 p = d^2p/dx^2 + d^2p/dy^2)
 
 % Generate boundary condition operators for pressure system
@@ -40,7 +41,8 @@ P.L_s = D_s_all{3}; % Extract Laplacian operator (del^2 p = d^2p/dx^2 + d^2p/dy^
 [Dn1_b_s, ~] = build_obstacle_pressure_bc(G, xy_s, xy1_s, cfg);
 
 % Wall boundaries (top/bottom): Neumann BC (dp/dy = 0)
-[Nearest_Idx_b_y] = nearest_interp(boundary_y_s, [xy_s; xy1_s(length(xy_s)+length(boundary_y_s)+1, :)], cfg.rbf.stencil_size_boundary_wall);
+[Nearest_Idx_b_y] = nearest_interp(boundary_y_s, ...
+    [xy_s; xy1_s(length(xy_s)+length(boundary_y_s)+1, :)], cfg.rbf.stencil_size_boundary_wall);
 Nearest_Idx_b_y = [(length(xy_s) + 1:length(xy_s) + length(boundary_y_s))', Nearest_Idx_b_y];
 
 D = RBF_PHS_FD_all(boundary_y_s, xy1_s, Nearest_Idx_b_y, cfg.rbf.order_boundary, cfg.rbf.poly_degree_boundary, cfg.rbf.derivative_order);
@@ -98,4 +100,3 @@ P.L_inv_s = @(v) (qq * (UU \ (LL \ (pp * (rr \ (v)))))); % Pressure solver funct
 [P.D0_21_x_obs, P.D0_21_y_obs] = build_obstacle_grad_operators(G, xy1_s, cfg);
 
 end
-

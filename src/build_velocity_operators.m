@@ -69,7 +69,8 @@ Vops.L0 = D_all{3};
 Nearest_Idx_nb = find(G.idx_near_obs_V);
 xy_nb = xy1(Nearest_Idx_nb, :);
 
-D_all_nb = RBF_PHS_FD_all(xy_nb, xy1, S.Nearest_Idx(Nearest_Idx_nb, :), cfg.rbf.order_near_obstacle, cfg.rbf.order_near_obstacle_poly, cfg.rbf.poly_degree_near_obstacle);
+D_all_nb = RBF_PHS_FD_all(xy_nb, xy1, S.Nearest_Idx(Nearest_Idx_nb, :), cfg.rbf.order_near_obstacle, ...
+    cfg.rbf.order_near_obstacle_poly, cfg.rbf.poly_degree_near_obstacle);
 
 Vops.Dx(Nearest_Idx_nb, :) = D_all_nb{1};
 Vops.Dy(Nearest_Idx_nb, :) = D_all_nb{2};
@@ -81,11 +82,11 @@ Idx = (1:length(xy))';
 Nearest_Idx_nb = Idx(Nearest_Idx_nb);
 xy_nb = xy1(Nearest_Idx_nb, :);
 
-D_all_nb = RBF_PHS_FD_all(xy_nb, xy1, S.Nearest_Idx(Nearest_Idx_nb, :), cfg.rbf.order_near_boundary, cfg.rbf.poly_degree_main, cfg.rbf.poly_degree_near_boundary);
+D_all_nb = RBF_PHS_FD_all(xy_nb, xy1, S.Nearest_Idx(Nearest_Idx_nb, :), cfg.rbf.order_near_boundary, ...
+    cfg.rbf.poly_degree_main, cfg.rbf.poly_degree_near_boundary);
 
 Vops.Dx(Nearest_Idx_nb, :) = D_all_nb{1};
 Vops.Dy(Nearest_Idx_nb, :) = D_all_nb{2};
 Vops.L0(Nearest_Idx_nb, :) = D_all_nb{3};
 
 end
-

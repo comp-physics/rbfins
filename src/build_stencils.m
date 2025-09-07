@@ -28,10 +28,10 @@ k = cfg.rbf.stencil_size_main;
 S.Nearest_Idx_s = nearest_interp(xy1_s, xy1_s, k); % k-nearest neighbors for P-grid
 
 % Interpolation stencils: P-grid to V-grid
-S.Nearest_Idx_interp_21 = nearest_interp(xy1(1:length(xy)+length(G.boundary_y)+length(G.boundary_out), :), xy1_s, cfg.rbf.stencil_size_boundary_outlet);
+S.Nearest_Idx_interp_21 = nearest_interp(xy1(1:length(xy)+length(G.boundary_y)+length(G.boundary_out), :), ...
+    xy1_s, cfg.rbf.stencil_size_boundary_outlet);
 
 % Interpolation stencils: V-grid to P-grid
 S.Nearest_Idx_interp = nearest_interp(xy_s, xy1, cfg.rbf.stencil_size_boundary_outlet);
 
 end
-

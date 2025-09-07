@@ -68,4 +68,3 @@ caxis([-cfg.visualization.color_axis_range, cfg.visualization.color_axis_range])
 drawnow; % Update display immediately
 
 end
-

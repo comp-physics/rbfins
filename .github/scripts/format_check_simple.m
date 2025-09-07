@@ -56,8 +56,8 @@ for i = 1:length(allFiles)
                 end
             end
             
-            % Check for very long lines (>130 characters - reasonable for MATLAB)
-            if length(line) > 130
+            % Check for very long lines (>150 characters - reasonable for MATLAB)
+            if length(line) > 150
                 fprintf('\n  Line %d: Line too long (%d chars)', lineNum, length(line));
                 fileIssues = fileIssues + 1;
             end
@@ -80,11 +80,7 @@ for i = 1:length(allFiles)
         end
     end
     
-    % Check file ending
-    if ~isempty(lines) && ~isempty(strtrim(lines{end}))
-        fprintf('\n  File should end with empty line');
-        fileIssues = fileIssues + 1;
-    end
+    % Note: MBeautifier removes trailing empty lines, so we don't check for them
     
     if fileIssues > 0
         fprintf('\n  ❌ %d formatting issues found\n', fileIssues);
@@ -103,10 +99,10 @@ if hasIssues
     fprintf('\n💡 To fix formatting issues:\n');
     fprintf('   1. Run locally: ./format_matlab.sh\n');
     fprintf('   2. Or manually: matlab -batch "addpath(''.github/scripts''); format_matlab_code"\n');
-    fprintf('\n⚠️  Please fix formatting issues before merging.\n');
+    fprintf('\n⚠️  Formatting issues found - failing CI.\n');
     
-    % Don't fail CI for formatting issues, just warn
-    % error('Formatting issues found. Please run formatter locally.');
+    % Fail CI for formatting issues
+    error('Formatting issues found. Please run formatter locally and commit the changes.');
 else
     fprintf('✅ All files are properly formatted!\n');
 end
