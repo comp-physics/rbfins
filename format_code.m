@@ -13,7 +13,8 @@ function format_code()
 % - Ensure single final newline
 % - Normalize line endings to LF
 % - Reduce multiple consecutive empty lines to maximum of 2
-% - Basic indentation cleanup
+% - Convert tabs to 4 spaces
+% - Fix indentation for nested blocks (if/for/while/function/etc.)
 
 fprintf('🎨 MATLAB Code Formatter\n');
 fprintf('========================\n');
@@ -81,11 +82,11 @@ end
 originalContent = content;
 
 % 1. Normalize line endings to LF
-if contains(content, sprintf('\r\n'))
-    content = strrep(content, sprintf('\r\n'), sprintf('\n'));
+if contains(content, [char(13) newline])
+    content = strrep(content, [char(13) newline], newline);
     changeCount = changeCount + 1;
-elseif contains(content, sprintf('\r'))
-    content = strrep(content, sprintf('\r'), sprintf('\n'));
+elseif contains(content, char(13))
+    content = strrep(content, char(13), newline);
     changeCount = changeCount + 1;
 end
 
@@ -93,7 +94,6 @@ end
 lines = strsplit(content, '\n', 'CollapseDelimiters', false);
 
 % 3. Remove trailing whitespace from each line
-originalLineCount = length(lines);
 for i = 1:length(lines)
     originalLine = lines{i};
     trimmedLine = regexprep(originalLine, '\s+$', '');
@@ -136,29 +136,134 @@ if ~isempty(lines)
     end
 end
 
-% 6. Basic indentation cleanup (convert tabs to spaces)
-for i = 1:length(lines)
-    if contains(lines{i}, sprintf('\t'))
-        lines{i} = strrep(lines{i}, sprintf('\t'), '    '); % 4 spaces per tab
-        changeCount = changeCount + 1;
-    end
+% 6. Fix indentation (convert tabs to spaces and ensure consistent nesting)
+originalLines = lines;
+lines = fixIndentation(lines);
+if ~isequal(lines, originalLines)
+    changeCount = changeCount + 1;
 end
 
 % Reconstruct content
 newContent = strjoin(lines, '\n');
 
-% Only write if changes were made
-if changeCount > 0
+% Only write if content actually changed
+if ~strcmp(originalContent, newContent)
     try
         fid = fopen(filePath, 'w', 'n', 'UTF-8');
         if fid == -1
             warning('Could not write to file: %s', filePath);
+            changeCount = 0;
             return;
         end
         fwrite(fid, newContent, 'char');
         fclose(fid);
     catch ME
         warning('Error writing file %s: %s', filePath, ME.message);
+        changeCount = 0;
+    end
+else
+    changeCount = 0;  % No actual changes made
+end
+
+end
+
+function lines = fixIndentation(lines)
+% Fix indentation for MATLAB code
+% Converts tabs to spaces and ensures consistent 4-space indentation for nested blocks
+
+indentSize = 4; % MATLAB standard
+currentIndent = 0;
+
+% Keywords that increase indentation
+increaseKeywords = {
+    'if', 'for', 'while', 'switch', 'try', 'parfor', 'spmd', ...
+    'methods', 'properties', 'events', 'enumeration'
+};
+
+% Keywords that decrease indentation  
+decreaseKeywords = {
+    'end', 'else', 'elseif', 'case', 'otherwise', 'catch'
+};
+
+% Keywords that both decrease and increase (like else, elseif, case, otherwise, catch)
+neutralKeywords = {'else', 'elseif', 'case', 'otherwise', 'catch'};
+
+% Add these to the increase keywords since they do increase after being processed
+increaseKeywords = [increaseKeywords, neutralKeywords];
+
+for i = 1:length(lines)
+    line = lines{i};
+    
+    % Convert tabs to spaces first
+    line = strrep(line, sprintf('\t'), repmat(' ', 1, indentSize));
+    
+    % Skip empty lines and comments-only lines for indentation logic
+    trimmedLine = strtrim(line);
+    if isempty(trimmedLine)
+        lines{i} = ''; % Keep empty lines empty
+        continue;
+    end
+    
+    % Check if this line should decrease indentation before applying
+    shouldDecreaseBefore = false;
+    for j = 1:length(decreaseKeywords)
+        keyword = decreaseKeywords{j};
+        % Check if line starts with the keyword (after whitespace)
+        if startsWith(trimmedLine, keyword) && ...
+           (length(trimmedLine) == length(keyword) || ...
+            ~isstrprop(trimmedLine(length(keyword)+1), 'alphanum'))
+            shouldDecreaseBefore = true;
+            break;
+        end
+    end
+    
+    % Decrease indentation before applying to this line
+    if shouldDecreaseBefore
+        currentIndent = max(0, currentIndent - 1);
+    end
+    
+    % Apply current indentation to the line
+    if ~isempty(trimmedLine)
+        properIndent = repmat(' ', 1, currentIndent * indentSize);
+        lines{i} = [properIndent, trimmedLine];
+    end
+    
+    % Check if this line should increase indentation after
+    shouldIncreaseAfter = false;
+    for j = 1:length(increaseKeywords)
+        keyword = increaseKeywords{j};
+        % Check if line starts with the keyword (after whitespace)
+        if startsWith(trimmedLine, keyword) && ...
+           (length(trimmedLine) == length(keyword) || ...
+            ~isstrprop(trimmedLine(length(keyword)+1), 'alphanum'))
+            shouldIncreaseAfter = true;
+            break;
+        end
+    end
+    
+    % Handle indentation increase after this line
+    if shouldIncreaseAfter
+        % Check if this is a neutral keyword (decrease before, increase after)
+        isNeutral = false;
+        for j = 1:length(neutralKeywords)
+            if startsWith(trimmedLine, neutralKeywords{j})
+                isNeutral = true;
+                break;
+            end
+        end
+        
+        % Only increase if not neutral, or if it's a block-starting neutral keyword
+        if ~isNeutral || any(strcmp(trimmedLine(1:min(4,length(trimmedLine))), {'else', 'elif', 'case', 'othe', 'catc'}))
+            currentIndent = currentIndent + 1;
+        end
+    end
+    
+    % Special case: single-line if statements don't increase indentation
+    if startsWith(trimmedLine, 'if ') && contains(trimmedLine, ';') && ~contains(trimmedLine, 'end')
+        % This is likely a single-line if, don't increase indentation
+        if shouldIncreaseAfter
+            currentIndent = currentIndent - 1;
+        end
     end
 end
 

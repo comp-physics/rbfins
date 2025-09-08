@@ -17,114 +17,140 @@ This MATLAB code implements a mesh-free method to solve the incompressible Navie
 
 2. **Running the Simulation**:
    - Open MATLAB and navigate to the repository directory
-   - Run the main script by typing `cylinder` in the MATLAB command window
-   - Alternatively, open `cylinder.m` in the MATLAB editor and click the "Run" button
+   - Run the main script by typing `simulate` in the MATLAB command window
+   - Alternatively, open `simulate.m` in the MATLAB editor and click the "Run" button
 
-3. **What to Expect**:
-   - The script will generate a mesh for the flow domain
+3. **Selecting Geometry Types**:
+   The code supports three geometry types, each with its own configuration:
+   
+   **Default (Cylinder)**:
+   ```matlab
+   simulate  % Runs cylinder geometry by default
+   ```
+   
+   **Specific Geometry**:
+   ```matlab
+   % Set environment variables to specify geometry
+   setenv('GEOMETRY_TYPE', 'cylinder');    % or 'ellipse' or 'rectangle'
+   simulate
+   ```
+   
+   **Direct Configuration**:
+   ```matlab
+   cfg = config('cylinder');    % Load cylinder configuration
+   cfg = config('ellipse');     % Load ellipse configuration  
+   cfg = config('rectangle');   % Load rectangle configuration
+   ```
+
+4. **What to Expect**:
+   - The script will generate a mesh for the flow domain around the selected obstacle
    - Set up the differentiation matrices using RBF-FD
-   - Run the time-stepping loop for 5000 iterations (by default)
+   - Run the time-stepping loop for the specified number of iterations (default: 5000)
    - Display the final velocity field as scatter plots showing the u and v components
 
-4. **Modifying Simulation Parameters**:
-   - **Easy Configuration**: All simulation parameters are centralized in `config.m`
+5. **Modifying Simulation Parameters**:
+   - **Unified Configuration**: All simulation parameters are handled by the `config(geometry_type)` function
    - **Key Parameters Available**:
      - Reynolds number: `config.simulation.reynolds_number` (default: 100)
      - Time step: `config.simulation.time_step` (default: 1e-2)
      - Number of time steps: `config.simulation.num_time_steps` (default: 5000)
      - Domain size: `config.domain.x_min/x_max/y_min/y_max`
-     - **Geometry Selection**: `config.geometry.type` ('cylinder', 'ellipse', or 'rectangle')
-     - **Cylinder**: `config.geometry.obstacle_radius` (default: 0.5)
-     - **Ellipse**: `config.geometry.ellipse_a` (semi-major axis), `config.geometry.ellipse_b` (semi-minor axis)
-     - **Rectangle**: `config.geometry.rect_width`, `config.geometry.rect_height`, `config.geometry.rect_x_center`, `config.geometry.rect_y_center`
+     - **Geometry-Specific Parameters**:
+       - **Cylinder**: `config.geometry.obstacle_radius` (default: 0.5)
+       - **Ellipse**: `config.geometry.ellipse_a` (semi-major axis), `config.geometry.ellipse_b` (semi-minor axis)
+       - **Rectangle**: `config.geometry.rect_width`, `config.geometry.rect_height`, `config.geometry.rect_x_center`, `config.geometry.rect_y_center`
      - RBF parameters: Various stencil sizes and polynomial degrees
-   - **To modify parameters**: Edit the values in `config.m` - no need to touch the main code
+   - **To modify parameters**: Edit the values in the `config.m` function for the specific geometry case
    - **Configuration Structure**:
      - `config.domain`: Domain boundaries and dimensions
-     - `config.mesh`: Mesh generation parameters
+     - `config.mesh`: Mesh generation parameters (automatically optimized per geometry)
      - `config.rbf`: RBF-FD algorithm parameters
      - `config.simulation`: Time stepping and physics parameters
      - `config.schemes`: Numerical scheme coefficients
      - `config.visualization`: Plot settings and visualization parameters
 
-5. **Computational Requirements**:
+6. **Computational Requirements**:
    - The simulation is computationally intensive and may take time to complete
    - For a full simulation with 5000 time steps, expect several minutes of computation time depending on your hardware
+   - Rectangle geometries require finer meshes and may take longer to converge
 
 ### Testing with GitHub Actions
 
-This repository includes automated testing using GitHub Actions to ensure the code runs correctly across different environments.
+This repository includes comprehensive automated testing using GitHub Actions to ensure the code runs correctly across different environments and geometries.
 
-1. **Test Configuration**:
-   - Tests are defined in the `tests/TestCylinder.m` file using MATLAB's unit testing framework
-   - The GitHub Actions workflows are configured in `.github/workflows/`
-   - In CI environments, the simulation runs with a reduced number of time steps (20 instead of 5000)
+1. **Test Structure**:
+   - **Geometry-Specific Tests**: Each geometry has its own test class (`TestCylinderGeometry.m`, `TestEllipseGeometry.m`, `TestRectangleGeometry.m`)
+   - **Golden File Tests**: Regression tests that compare against known-good results (`TestGoldenCylinder.m`, `TestGoldenEllipse.m`, `TestGoldenRectangle.m`)
+   - **Base Test Class**: `BaseGeometryTest.m` provides common functionality to avoid code duplication
+   - **CI Environment**: Tests run with reduced time steps (20 instead of 5000) for faster execution
 
 2. **CI Workflows**:
-   - **MATLAB CI** (`.github/workflows/matlab.yml`): Runs unit tests and verifies project structure
+   - **MATLAB CI** (`.github/workflows/matlab.yml`): Runs all geometry tests and golden file comparisons
    - **MATLAB Code Quality** (`.github/workflows/ci-quality.yml`): Runs code analyzer (linting) and formatting checks
 
-2. **What the Tests Verify**:
-   - Basic smoke test to ensure the code runs without errors
-   - Verification that the configuration file contains all required parameters
-   - Confirmation that magic numbers have been properly replaced with configuration parameters
-   - Validation that the main script correctly uses the configuration file
+3. **What the Tests Verify**:
+   - **Smoke Tests**: Ensure each geometry simulation runs without errors
+   - **Configuration Validation**: Verify that geometry-specific config parameters are present
+   - **Golden File Comparison**: Ensure numerical reproducibility by comparing against reference results
+   - **Parameter Validation**: Confirm that all required fields are present in configuration
 
-3. **Running Tests Locally**:
-   - You can run the tests locally using MATLAB's test framework:
+4. **Running Tests Locally**:
    ```matlab
+   % Run all tests
    addpath('tests');
-   setup_paths(); % This adds the necessary paths
    runtests('tests');
+   
+   % Run tests for specific geometry
+   runtests('tests/TestCylinderGeometry.m');
+   runtests('tests/TestEllipseGeometry.m');
+   runtests('tests/TestRectangleGeometry.m');
+   
+   % Run golden file tests
+   runtests('tests/TestGoldenCylinder.m');
+   runtests('tests/TestGoldenEllipse.m');
+   runtests('tests/TestGoldenRectangle.m');
    ```
 
-4. **Golden File Testing**:
-   - The test suite includes "golden file" tests that compare current simulation results against a known-accurate reference
-   - This ensures numerical reproducibility and detects unintended changes in simulation behavior
-   - To generate a new golden file (only needed once or when algorithm changes):
-   ```matlab
-   addpath('tests/golden'); make_golden_simple();
-   ```
-   - To run golden tests:
-   ```matlab
-   runtests('tests/TestGolden.m');
-   ```
-   - The golden file test ensures reproducibility by:
-     - Setting a fixed random seed for deterministic mesh generation
-     - Comparing final velocity fields within specified tolerances
-     - Alerting to any changes in numerical results
+5. **Golden File Testing**:
+   - **Purpose**: Ensures numerical reproducibility and detects unintended changes in simulation behavior
+   - **Coverage**: Separate golden files for each geometry type
+   - **Generation**: Golden files are automatically maintained and updated when needed
+   - **Comparison**: Tests compare final velocity fields within specified tolerances (5e-3 relative/absolute)
+   - **Deterministic**: Uses fixed random seed (42) for reproducible mesh generation
 
-5. **Configuration File Approach**:
-   - All simulation parameters are centralized in `config.m`
-   - This makes it easy to modify parameters without changing the main code
-   - The configuration file is organized into logical sections:
-     - `domain`: Domain boundaries and dimensions
-     - `mesh`: Mesh generation parameters
-     - `rbf`: RBF-FD algorithm parameters
-     - `simulation`: Time stepping and physics parameters
-     - `schemes`: Numerical scheme coefficients
-     - `visualization`: Plot settings and visualization parameters
+6. **Test Architecture**:
+   - **Inheritance-Based**: All geometry tests inherit from `BaseGeometryTest` to share common logic
+   - **Parameterized**: Tests automatically adapt to different geometry types
+   - **Environment Variables**: CI tests use `CONFIG_FUNC` and `GEOMETRY_TYPE` environment variables
 
-5. **Adding New Tests**:
-   - Additional tests can be added to the `tests/TestCylinder.m` file
-   - Follow MATLAB's unit testing framework conventions for new test methods
+7. **Adding New Tests**:
+   - For new geometries: Create a new test class inheriting from `BaseGeometryTest`
+   - Define `GEOMETRY_TYPE` and `EXPECTED_FIELDS` properties
+   - Golden files are automatically generated and maintained
+   - Follow the existing pattern in `TestCylinderGeometry.m`
 
-6. **Code Quality Tools**:
-   - **MATLAB Code Analyzer**: Run `addpath('.github/scripts'); lint` in MATLAB to check for code issues
-   - **Code Formatting**: 
+8. **Code Quality Tools**:
+   - **MATLAB Code Analyzer**: Integrated linting checks for code quality
+   - **Unified Code Formatting**: 
      - **Local**: Run `./format.sh` or `matlab -batch "format_code"` to format all code
      - **CI**: Automatically checks if code is properly formatted on pull requests
+     - **Idempotent**: Formatter only modifies files when changes are needed
    - **CI Integration**: Both linting and formatting checks run automatically on pull requests
 
 #### Key Components
 
 ##### 1. Domain and Mesh Generation
-- The computational domain is a rectangle ($-8 \leq x \leq 24$, $-8 \leq y \leq 8$) with a cylinder of radius 0.5 at the origin
-- The mesh is generated using the DistMesh library (included in the distmesh/ folder)
-- Local grid refinement is applied near the cylinder and in the wake region
+- The computational domain is a rectangle ($-8 \leq x \leq 24$, $-8 \leq y \leq 8$) with an obstacle at the origin
+- **Supported Obstacle Types**:
+  - **Cylinder**: Circular obstacle with configurable radius (default: 0.5)
+  - **Ellipse**: Elliptical obstacle with configurable semi-major and semi-minor axes
+  - **Rectangle**: Rectangular obstacle with configurable width, height, and center position
+- The mesh is generated using the DistMesh library (included in the `lib/distmesh/` folder)
+- **Adaptive Mesh Refinement**: Automatically applied near obstacles and in wake regions
+- **Geometry-Specific Optimization**: Mesh parameters are automatically tuned for each geometry type
 - The code separates nodes into:
   - Interior nodes (`xy_s` for pressure, `xy` for velocity)
-  - Boundary nodes (inlet, outlet, top/bottom walls, and cylinder surface)
+  - Boundary nodes (inlet, outlet, top/bottom walls, and obstacle surface)
 
 ##### 2. RBF-FD Discretization
 - `RBF_PHS_FD_all.m` constructs differentiation matrices using PHS-RBF with polynomial augmentation
@@ -145,14 +171,15 @@ This repository includes automated testing using GitHub Actions to ensure the co
   - `D0_{21}_x`, `D0_{21}_y`: Derivatives from P-grid to V-grid
 
 ##### 4. Boundary Conditions
-- Inlet: Uniform flow (U=1, V=0)
-- Outlet: Neumann boundary conditions
-- Top/bottom walls: No-slip conditions
-- Cylinder surface: No-slip conditions
-- Special differentiation matrices are constructed for each boundary
+- **Inlet**: Uniform flow (U=1, V=0)
+- **Outlet**: Neumann boundary conditions
+- **Top/bottom walls**: No-slip conditions
+- **Obstacle surface**: No-slip conditions (applies to all geometry types)
+- **Adaptive Implementation**: Special differentiation matrices are constructed for each boundary type
+- **Geometry-Agnostic**: Boundary condition implementation works seamlessly across all supported geometries
 
 ##### 5. Time Integration (Fractional Step Method)
-The `NS_2d_cylinder_PHS.m` function implements a fractional step method:
+The `NS_2d_fractional_step_PHS.m` function implements a fractional step method:
 
 1. **Advection Step**:
    - Uses Adams-Bashforth scheme ($\frac{3}{2}$ current - $\frac{1}{2}$ previous)
@@ -199,10 +226,15 @@ The fractional step method splits these equations into:
 Which leads to the pressure Poisson equation: $\nabla^2 p = \frac{\nabla \cdot \mathbf{u}^*}{dt}$
 
 #### Notable Implementation Details
-- The code uses LU decomposition for efficient solution of linear systems
-- Higher-order RBF-FD stencils (more polynomial terms) are used near the cylinder
-- The implementation handles the pressure-velocity coupling through the projection method
-- The cylinder simulation should capture vortex shedding (von Kármán vortex street) at $Re=100$
+- **Efficient Linear Solvers**: Uses LU decomposition for efficient solution of linear systems
+- **Adaptive Stencils**: Higher-order RBF-FD stencils (more polynomial terms) are used near obstacles
+- **Pressure-Velocity Coupling**: Handled through the projection method for incompressible flow
+- **Vortex Shedding**: All geometries can capture vortex shedding phenomena at appropriate Reynolds numbers
+- **Geometry-Specific Optimizations**: 
+  - Rectangle geometries use finer meshes and robust DistMesh parameters for convergence
+  - Ellipse geometries balance computational efficiency with accuracy
+  - Cylinder geometries use the original optimized parameters
+- **Robust Mesh Generation**: Custom `distmesh2d_robust.m` handles challenging geometries with sharp corners
 
 ### References
 - T. Chu, O. T. Schmidt, RBF-FD discretization of the Navier-Stokes equations on scattered but staggered nodes, Journal of Computational Physics 474, 111756, 2023

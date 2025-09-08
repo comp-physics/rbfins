@@ -39,7 +39,7 @@ d = sqrt(dx.^2 + dy.^2) - radius;
 % Handle interior points correctly
 interior_mask = (abs(px) <= a - radius) | (abs(py) <= b - radius);
 d(interior_mask) = -radius + max(abs(px(interior_mask)) - (a - radius), ...
-                                 abs(py(interior_mask)) - (b - radius));
+abs(py(interior_mask)) - (b - radius));
 
 % Final adjustment for interior
 inside_box = (abs(px) <= a) & (abs(py) <= b);

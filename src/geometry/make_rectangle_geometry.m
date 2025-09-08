@@ -35,27 +35,21 @@ a2 = cfg.mesh.refine_a2;
 b2 = cfg.mesh.refine_b2;
 
 %% Define rectangle-specific distance functions for DistMesh
-% Rectangle bounds for the obstacle
-rect_x1 = rect_x_center - rect_width/2;
-rect_x2 = rect_x_center + rect_width/2;
-rect_y1 = rect_y_center - rect_height/2;
-rect_y2 = rect_y_center + rect_height/2;
-
 % Use rounded rectangle with very small corner radius for near-rectangular shape
 % Small radius prevents sharp corner convergence issues
 corner_radius = min(rect_width, rect_height) * 0.03; % 3% rounding - minimal but smooth
 
 fprintf('Using rounded rectangle (width=%.2f, height=%.2f, radius=%.3f)...\n', ...
-        rect_width, rect_height, corner_radius);
+rect_width, rect_height, corner_radius);
 
 % fd: Signed distance function for domain geometry (outer rectangle minus rounded rectangle)
 fd = @(p) ddiff(drectangle(p, x_min, x_max, y_min, y_max), ...
-               drounded_rectangle(p, rect_x_center, rect_y_center, rect_width, rect_height, corner_radius));
+drounded_rectangle(p, rect_x_center, rect_y_center, rect_width, rect_height, corner_radius));
 
 % fd1: Edge length function for local mesh refinement
 % Provides smaller elements near rectangle and in wake region behind it
 fd1 = @(p) min(a1+b1*abs(drounded_rectangle(p, rect_x_center, rect_y_center, rect_width, rect_height, corner_radius)), ...
-               a2+b2*abs(dpoly(p, [rect_x2, rect_y_center; x_max, rect_y_center])));
+a2+b2*abs(dpoly(p, [rect_x2, rect_y_center; x_max, rect_y_center])));
 
 % Define fixed corner points to maintain rectangular domain shape
 fix = [x_min, y_min; x_min, y_max; x_max, y_max; x_max, y_min];
@@ -81,9 +75,9 @@ xy = unique(xy, 'rows'); % Remove duplicate nodes
 %% Extract and classify boundary nodes for pressure grid (P-grid)
 % Remove corner nodes first to avoid duplicate boundary classification
 idx_corners = (xy_s(:, 1) < x_min + eps & xy_s(:, 2) < y_min + eps) | ...
-    (xy_s(:, 1) < x_min + eps & xy_s(:, 2) > y_max - eps) | ...
-    (xy_s(:, 1) > x_max - eps & xy_s(:, 2) > y_max - eps) | ...
-    (xy_s(:, 1) > x_max - eps & xy_s(:, 2) < y_min + eps);
+(xy_s(:, 1) < x_min + eps & xy_s(:, 2) > y_max - eps) | ...
+(xy_s(:, 1) > x_max - eps & xy_s(:, 2) > y_max - eps) | ...
+(xy_s(:, 1) > x_max - eps & xy_s(:, 2) < y_min + eps);
 xy_s(idx_corners, :) = [];
 
 % Extract inlet boundary nodes (left wall, x = x_min)
@@ -142,9 +136,9 @@ for i = 1:size(boundary_obs_s, 1)
     % Compute gradient numerically using finite differences
     delta = eps * 100;
     dx = (drounded_rectangle([x_pt + delta, y_pt], rect_x_center, rect_y_center, rect_width, rect_height, corner_radius) - ...
-          drounded_rectangle([x_pt - delta, y_pt], rect_x_center, rect_y_center, rect_width, rect_height, corner_radius)) / (2 * delta);
+    drounded_rectangle([x_pt - delta, y_pt], rect_x_center, rect_y_center, rect_width, rect_height, corner_radius)) / (2 * delta);
     dy = (drounded_rectangle([x_pt, y_pt + delta], rect_x_center, rect_y_center, rect_width, rect_height, corner_radius) - ...
-          drounded_rectangle([x_pt, y_pt - delta], rect_x_center, rect_y_center, rect_width, rect_height, corner_radius)) / (2 * delta);
+    drounded_rectangle([x_pt, y_pt - delta], rect_x_center, rect_y_center, rect_width, rect_height, corner_radius)) / (2 * delta);
 
     % Normalize to unit vector
     grad_norm = sqrt(dx^2 + dy^2);
@@ -178,17 +172,17 @@ y_max_dist = cfg.distances.y_max;
 
 % Velocity grid: nodes far from all boundaries (high-order region)
 idx_far_boundaries_V = rect_dist_V > r_dist & ...
-    xy(:, 1) > x_min + x_min_dist & ...
-    xy(:, 2) < y_max - y_max_dist & ...
-    xy(:, 2) > y_min + y_min_dist & ...
-    xy(:, 1) < x_max - x_max_dist;
+xy(:, 1) > x_min + x_min_dist & ...
+xy(:, 2) < y_max - y_max_dist & ...
+xy(:, 2) > y_min + y_min_dist & ...
+xy(:, 1) < x_max - x_max_dist;
 
 % Pressure grid: nodes far from all boundaries (high-order region)
 idx_far_boundaries_P = rect_dist_P > r_dist & ...
-    xy_s(:, 1) > x_min + x_min_dist & ...
-    xy_s(:, 2) < y_max - y_max_dist & ...
-    xy_s(:, 2) > y_min + y_min_dist & ...
-    xy_s(:, 1) < x_max - x_max_dist;
+xy_s(:, 1) > x_min + x_min_dist & ...
+xy_s(:, 2) < y_max - y_max_dist & ...
+xy_s(:, 2) > y_min + y_min_dist & ...
+xy_s(:, 1) < x_max - x_max_dist;
 
 %% Assemble geometry structure
 G.xy = xy; % Interior velocity nodes

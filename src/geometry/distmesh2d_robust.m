@@ -21,76 +21,76 @@ p=p(feval(fd,p,varargin{:})<geps,:);                 % Keep only d<0 points
 r0=1./feval(fh,p,varargin{:}).^2;                    % Probability to keep point
 p=p(rand(size(p,1),1)<r0./max(r0),:);               % Rejection method
 if ~isempty(pfix), p=setdiff(p,pfix,'rows'); end    % Remove duplicated nodes
-pfix=unique(pfix,'rows'); nfix=size(pfix,1);
-if ~isempty(pfix), p=[pfix; p]; end                 % Prepend fix points
-N=size(p,1);                                        % Number of points N
+    pfix=unique(pfix,'rows'); nfix=size(pfix,1);
+    if ~isempty(pfix), p=[pfix; p]; end                 % Prepend fix points
+        N=size(p,1);                                        % Number of points N
 
-count=0;
-pold=inf;                                           % For first iteration
-fprintf('DistMesh (robust): ');
+        count=0;
+        pold=inf;                                           % For first iteration
+        fprintf('DistMesh (robust): ');
 
-while count < maxiter
-  count=count+1;
-  if mod(count,20)==0, fprintf('%d ',count); end
+        while count < maxiter
+            count=count+1;
+            if mod(count,20)==0, fprintf('%d ',count); end
 
-  % 3. Retriangulation by the Delaunay algorithm
-  % Handle first iteration when pold is scalar
-  if count == 1 || max(sqrt(sum((p-pold).^2,2))/h0)>ttol           % Any large movement?
-    pold=p;                                          % Save current positions
-    t=delaunayn(p);                                  % List of triangles
-    pmid=(p(t(:,1),:)+p(t(:,2),:)+p(t(:,3),:))/3;   % Compute centroids
-    t=t(feval(fd,pmid,varargin{:})<-geps,:);         % Keep interior triangles
-    % 4. Describe each bar by a unique pair of nodes
-    bars=[t(:,[1,2]);t(:,[1,3]);t(:,[2,3])];        % Interior bars duplicated
-    bars=unique(sort(bars,2),'rows');               % Bars as node pairs
-    % 5. Graphical output of the current mesh
-    if mod(count,densityctrlfreq)==0 && count>densityctrlfreq
-      if nfix>0
-        c=setdiff((1:N)',1:nfix);                    % Non-fixed points
-        p(c,:)=p(c,:)+0.2*h0*randn(length(c),2);    % Jiggle non-fixed points
-      end
-      pmid=(p(bars(:,1),:)+p(bars(:,2),:))/2;       % Compute bar midpoints
-      bars=bars(feval(fd,pmid,varargin{:})<-geps,:); % Keep interior bars
-    end
-  end
+                % 3. Retriangulation by the Delaunay algorithm
+                % Handle first iteration when pold is scalar
+                if count == 1 || max(sqrt(sum((p-pold).^2,2))/h0)>ttol           % Any large movement?
+                    pold=p;                                          % Save current positions
+                    t=delaunayn(p);                                  % List of triangles
+                    pmid=(p(t(:,1),:)+p(t(:,2),:)+p(t(:,3),:))/3;   % Compute centroids
+                    t=t(feval(fd,pmid,varargin{:})<-geps,:);         % Keep interior triangles
+                    % 4. Describe each bar by a unique pair of nodes
+                    bars=[t(:,[1,2]);t(:,[1,3]);t(:,[2,3])];        % Interior bars duplicated
+                    bars=unique(sort(bars,2),'rows');               % Bars as node pairs
+                    % 5. Graphical output of the current mesh
+                    if mod(count,densityctrlfreq)==0 && count>densityctrlfreq
+                        if nfix>0
+                            c=setdiff((1:N)',1:nfix);                    % Non-fixed points
+                            p(c,:)=p(c,:)+0.2*h0*randn(length(c),2);    % Jiggle non-fixed points
+                        end
+                        pmid=(p(bars(:,1),:)+p(bars(:,2),:))/2;       % Compute bar midpoints
+                        bars=bars(feval(fd,pmid,varargin{:})<-geps,:); % Keep interior bars
+                    end
+                end
 
-  % 6. Move mesh points based on bar lengths L and forces F
-  barvec=p(bars(:,1),:)-p(bars(:,2),:);             % List of bar vectors
-  L=sqrt(sum(barvec.^2,2));                         % L = Bar lengths
-  hbars=feval(fh,(p(bars(:,1),:)+p(bars(:,2),:))/2,varargin{:});
-  L0=hbars*Fscale*sqrt(sum(L.^2)/sum(hbars.^2));    % L0 = Desired lengths
+                % 6. Move mesh points based on bar lengths L and forces F
+                barvec=p(bars(:,1),:)-p(bars(:,2),:);             % List of bar vectors
+                L=sqrt(sum(barvec.^2,2));                         % L = Bar lengths
+                hbars=feval(fh,(p(bars(:,1),:)+p(bars(:,2),:))/2,varargin{:});
+                L0=hbars*Fscale*sqrt(sum(L.^2)/sum(hbars.^2));    % L0 = Desired lengths
 
-  % Density control - remove points that are too close
-  if mod(count,densityctrlfreq)==0 && any(L0>2*L)
-    p(setdiff(reshape(bars(L0>2*L,:),[],1),1:nfix),:)=[];
-    N=size(p,1);
-    pold=inf; % Reset pold since p changed size
-    continue;
-  end
+                % Density control - remove points that are too close
+                if mod(count,densityctrlfreq)==0 && any(L0>2*L)
+                    p(setdiff(reshape(bars(L0>2*L,:),[],1),1:nfix),:)=[];
+                    N=size(p,1);
+                    pold=inf; % Reset pold since p changed size
+                    continue;
+                end
 
-  F=max(L0-L,0);                                    % Bar forces (scalars)
-  Fvec=F./L*[1,1].*barvec;                         % Bar forces (x,y components)
-  Ftot=full(sparse(bars(:,[1,1,2,2]),ones(size(F))*[1,2,1,2],[Fvec,-Fvec],N,2));
-  Ftot(1:nfix,:)=0;                                % Force = 0 at fixed points
-  p=p+deltat*Ftot;                                 % Update node positions
+                F=max(L0-L,0);                                    % Bar forces (scalars)
+                Fvec=F./L*[1,1].*barvec;                         % Bar forces (x,y components)
+                Ftot=full(sparse(bars(:,[1,1,2,2]),ones(size(F))*[1,2,1,2],[Fvec,-Fvec],N,2));
+                Ftot(1:nfix,:)=0;                                % Force = 0 at fixed points
+                p=p+deltat*Ftot;                                 % Update node positions
 
-  % 7. Bring outside points back to the boundary
-  d=feval(fd,p,varargin{:}); ix=d>0;               % Find points outside (d>0)
-  if any(ix)
-    dgradx=(feval(fd,[p(ix,1)+deps,p(ix,2)],varargin{:})-d(ix))/deps; % Numerical
-    dgrady=(feval(fd,[p(ix,1),p(ix,2)+deps],varargin{:})-d(ix))/deps; %    gradient
-    dgrad2=dgradx.^2+dgrady.^2;
-    p(ix,:)=p(ix,:)-[d(ix).*dgradx./dgrad2,d(ix).*dgrady./dgrad2];    % Project
-  end
+                % 7. Bring outside points back to the boundary
+                d=feval(fd,p,varargin{:}); ix=d>0;               % Find points outside (d>0)
+                if any(ix)
+                    dgradx=(feval(fd,[p(ix,1)+deps,p(ix,2)],varargin{:})-d(ix))/deps; % Numerical
+                    dgrady=(feval(fd,[p(ix,1),p(ix,2)+deps],varargin{:})-d(ix))/deps; %    gradient
+                    dgrad2=dgradx.^2+dgrady.^2;
+                    p(ix,:)=p(ix,:)-[d(ix).*dgradx./dgrad2,d(ix).*dgrady./dgrad2];    % Project
+                end
 
-  % 8. Termination criterion: All interior nodes move less than dptol (scaled)
-  if max(sqrt(sum(deltat*Ftot(d<-geps,:).^2,2))/h0)<dptol, break; end
-end
+                % 8. Termination criterion: All interior nodes move less than dptol (scaled)
+                if max(sqrt(sum(deltat*Ftot(d<-geps,:).^2,2))/h0)<dptol, break; end
+                end
 
-fprintf(' -> %d iterations\n', count);
+                fprintf(' -> %d iterations\n', count);
 
-if count >= maxiter
-    fprintf('Warning: DistMesh reached maximum iterations (%d). Mesh may not be fully converged.\n', maxiter);
-end
+                if count >= maxiter
+                    fprintf('Warning: DistMesh reached maximum iterations (%d). Mesh may not be fully converged.\n', maxiter);
+                end
 
-end
+            end

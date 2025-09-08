@@ -29,16 +29,13 @@ if ~doPlot
     % Aggressively disable all graphics for tests
     set(0, 'DefaultFigureVisible', 'off');
     fprintf('Plotting completely disabled for testing/CI\n');
-    hasDisplay = false;
 else
     % Only check display if we might want to plot
     try
         % Try to create a figure to test if display is available
         f = figure('Visible', 'off');
         close(f);
-        hasDisplay = true;
     catch
-        hasDisplay = false;
         doPlot = false;
     end
 end

@@ -15,13 +15,21 @@ if exist(srcPath, 'dir')
     end
 end
 
-% Load configuration parameters (can be overridden by setting CONFIG_FUNC environment variable)
+% Load configuration parameters
+% Can be overridden by setting CONFIG_FUNC and GEOMETRY_TYPE environment variables
 config_func_name = getenv('CONFIG_FUNC');
+geometry_type = getenv('GEOMETRY_TYPE');
+
 if isempty(config_func_name)
-    cfg = config(); % Default config
+    config_func_name = 'config';
+end
+
+if isempty(geometry_type)
+    % Default behavior - call config function without arguments
+    cfg = config();
 else
-    % Use specified config function (e.g., config_cylinder, config_ellipse, config_rectangle)
-    cfg = feval(config_func_name);
+    % Pass geometry type to config function
+    cfg = config(geometry_type);
 end
 
 %% 1) Setup environment and dependencies

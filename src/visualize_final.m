@@ -46,7 +46,7 @@ title('u-velocity perturbation (u-1)');
 ylabel('y');
 xlabel('x');
 shading interp;
-caxis([-cfg.visualization.color_axis_range, cfg.visualization.color_axis_range]);
+clim([-cfg.visualization.color_axis_range, cfg.visualization.color_axis_range]);
 
 % Plot v-velocity field (should be zero in uniform flow)
 subplot(2, 1, 2);
@@ -63,7 +63,7 @@ title('v-velocity');
 xlabel('x');
 ylabel('y');
 set(gca, 'Ytick', []); % Remove y-tick labels for cleaner appearance
-caxis([-cfg.visualization.color_axis_range, cfg.visualization.color_axis_range]);
+clim([-cfg.visualization.color_axis_range, cfg.visualization.color_axis_range]);
 
 drawnow; % Update display immediately
 

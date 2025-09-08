@@ -15,6 +15,7 @@ folders = {'src','tests'};
 % TNOW1:   now is not recommended
 % FNCOLND: Consider explicitly defining the array
 % USENS:   Explicitly initialize this variable
+% ALIGN:   Keyword alignment warnings (very strict, stylistic)
 ignoreIDs = {
     'CABE';
     'ACABE';
@@ -27,7 +28,8 @@ ignoreIDs = {
     'DATST';
     'TNOW1';
     'FNCOLND';
-    'USENS'
+    'USENS';
+    'ALIGN'
 };
 logFile = fullfile('.github','scripts','lint.log');
 if ~exist(fullfile('.github','scripts'),'dir')

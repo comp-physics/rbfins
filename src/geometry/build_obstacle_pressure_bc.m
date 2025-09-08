@@ -28,7 +28,7 @@ Nearest_Idx_b_obs = [obs_indices, Nearest_Idx_b_obs];
 
 % Generate RBF-FD weights for gradient operators at obstacle boundary
 D = RBF_PHS_FD_all(G.boundary_obs_s, xy1_s, Nearest_Idx_b_obs, ...
-    cfg.rbf.order_boundary, cfg.rbf.poly_degree_boundary, cfg.rbf.derivative_order);
+cfg.rbf.order_boundary, cfg.rbf.poly_degree_boundary, cfg.rbf.derivative_order);
 
 % Compute normal derivative: dp/dn = (nx*dp/dx + ny*dp/dy)
 % Uses precomputed unit normal vectors from geometry helper

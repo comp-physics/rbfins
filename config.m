@@ -1,11 +1,18 @@
-function config = config()
+function config = config(geometry_type)
 % CONFIG - Configuration parameters for RBF Incompressible Navier-Stokes simulation
 %
 % This function returns a structure containing all configuration parameters
-% for the cylinder flow simulation. Modify values here to change simulation
-% parameters without touching the main code.
+% for flow simulations with different obstacle geometries.
 %
-% Usage: cfg = config();
+% Usage:
+%   cfg = config();                    % Default geometry (cylinder)
+%   cfg = config('cylinder');          % Cylinder geometry
+%   cfg = config('ellipse');           % Ellipse geometry
+%   cfg = config('rectangle');         % Rectangle geometry
+
+if nargin < 1
+    geometry_type = 'cylinder';  % Default geometry
+end
 
 %% Domain Configuration
 config.domain.x_min = -8;
@@ -14,7 +21,7 @@ config.domain.y_min = -8;
 config.domain.y_max = 8;
 
 %% Mesh Generation Parameters
-config.mesh.dist = 0.05;                    % Mesh spacing
+config.mesh.dist = 0.1;                    % Mesh spacing (adjusted per geometry below)
 config.mesh.boundary_eps = 0.002;          % Boundary tolerance
 config.mesh.refine_a1 = 0.05;             % Mesh refinement parameter A1 (near obstacle)
 config.mesh.refine_b1 = 0.08;             % Mesh refinement parameter B1 (near obstacle)
@@ -22,15 +29,28 @@ config.mesh.refine_a2 = 0.05;             % Mesh refinement parameter A2 (wake r
 config.mesh.refine_b2 = 0.08;             % Mesh refinement parameter B2 (wake region)
 config.mesh.edge_multiplier = 3;          % Multiplier for edge generation from triangles
 
-%% Geometry Parameters (obstacle-generic naming)
-config.geometry.type = 'rectangle';       % Geometry type: 'cylinder', 'ellipse', or 'rectangle'
-config.geometry.obstacle_radius = 0.5;    % Obstacle radius (for cylinder geometry)
-config.geometry.ellipse_a = 0.5;          % Ellipse semi-major axis (x-direction) - rectangle-like
-config.geometry.ellipse_b = 0.4;          % Ellipse semi-minor axis (y-direction) - rectangle-like
-config.geometry.rect_width = 1.0;         % Rectangle width (x-direction)
-config.geometry.rect_height = 0.8;        % Rectangle height (y-direction)
-config.geometry.rect_x_center = 0.0;      % Rectangle center X-coordinate
-config.geometry.rect_y_center = 0.0;      % Rectangle center Y-coordinate
+%% Geometry Parameters - Set based on geometry type
+config.geometry.type = lower(geometry_type);
+
+switch lower(geometry_type)
+case 'cylinder'
+    config.geometry.obstacle_radius = 0.5;    % Cylinder radius
+
+case 'ellipse'
+    config.geometry.ellipse_a = 0.5;          % Ellipse semi-major axis (x-direction)
+    config.geometry.ellipse_b = 0.4;          % Ellipse semi-minor axis (y-direction)
+
+case 'rectangle'
+    config.geometry.rect_width = 1.0;         % Rectangle width (x-direction)
+    config.geometry.rect_height = 0.8;        % Rectangle height (y-direction)
+    config.geometry.rect_x_center = 0.0;      % Rectangle center X-coordinate
+    config.geometry.rect_y_center = 0.0;      % Rectangle center Y-coordinate
+    % Rectangle needs finer mesh for convergence
+    config.mesh.dist = 0.05;
+
+otherwise
+    error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle', geometry_type);
+end
 
 %% RBF-FD Algorithm Parameters
 % Main stencil sizes
@@ -90,7 +110,13 @@ config.visualization.color_axis_range = 1e-0;
 
 %% Backward Compatibility for Legacy Cylinder-Specific Naming
 % Maintain old naming for compatibility with existing code
-config.mesh.cylinder_radius = config.geometry.obstacle_radius;
+switch lower(geometry_type)
+case 'cylinder'
+    config.mesh.cylinder_radius = config.geometry.obstacle_radius;
+case {'ellipse', 'rectangle'}
+    config.mesh.cylinder_radius = 0.5; % Equivalent radius for compatibility
+end
+
 config.rbf.stencil_size_boundary_cylinder = config.rbf.stencil_size_boundary_obstacle;
 config.rbf.order_near_cylinder = config.rbf.order_near_obstacle;
 config.rbf.order_near_cylinder_poly = config.rbf.order_near_obstacle_poly;

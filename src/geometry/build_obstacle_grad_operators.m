@@ -19,7 +19,7 @@ function [D0_21_x_obs, D0_21_y_obs] = build_obstacle_grad_operators(G, xy1_s, cf
 
 % Build RBF-FD gradient operators for obstacle boundary
 [D0_21_all_obs] = RBF_PHS_FD_all(G.boundary_obs, xy1_s, Nearest_Idx_interp_21_obs, ...
-    cfg.rbf.order_boundary, cfg.rbf.poly_degree_boundary, cfg.rbf.derivative_order);
+cfg.rbf.order_boundary, cfg.rbf.poly_degree_boundary, cfg.rbf.derivative_order);
 
 % Extract x and y gradient operators
 D0_21_x_obs = D0_21_all_obs{1}; % x-gradient operator (dp/dx)

@@ -90,7 +90,7 @@ end
 
 %% Assemble global sparse differentiation matrices
 D_all = assemble_global_matrices(weight_x, weight_y, weight_L, weight_xx, ...
-    weight_yy, weight_xy, Nearest_Idx, NxNy1, NxNy2, k);
+weight_yy, weight_xy, Nearest_Idx, NxNy1, NxNy2, k);
 
 end
 
@@ -161,12 +161,12 @@ r = hypot(x, y); % Distance from origin for each stencil point
 r_m2 = r.^(m - 2); % r^(m-2) appears in all derivative formulas
 
 L0 = m * bsxfun(@times, r_m2, ...
-    [-x, ... % d/dx:     -m*r^(m-2)*x
-    -y, ... % d/dy:     -m*r^(m-2)*y
-    m * ones(k, 1), ... % Laplacian: m*r^(m-2)*m = m^2*r^(m-2)
-    1 + (m - 2) * x.^2 ./ r.^2, ... % d^2/dx^2: m*r^(m-2)*(1+(m-2)*x^2/r^2)
-    1 + (m - 2) * y.^2 ./ r.^2, ... % d^2/dy^2: m*r^(m-2)*(1+(m-2)*y^2/r^2)
-    (m - 2) * x .* y ./ r.^2]); % d^2/dxdy: m*r^(m-2)*(m-2)*x*y/r^2
+[-x, ... % d/dx:     -m*r^(m-2)*x
+-y, ... % d/dy:     -m*r^(m-2)*y
+m * ones(k, 1), ... % Laplacian: m*r^(m-2)*m = m^2*r^(m-2)
+1 + (m - 2) * x.^2 ./ r.^2, ... % d^2/dx^2: m*r^(m-2)*(1+(m-2)*x^2/r^2)
+1 + (m - 2) * y.^2 ./ r.^2, ... % d^2/dy^2: m*r^(m-2)*(1+(m-2)*y^2/r^2)
+(m - 2) * x .* y ./ r.^2]); % d^2/dxdy: m*r^(m-2)*(m-2)*x*y/r^2
 
 % Handle special case at origin (avoid 0/0)
 for j = 1:k
@@ -281,7 +281,7 @@ w = W(1:k, :); % Only first k rows correspond to RBF weights
 end
 
 function D_all = assemble_global_matrices(weight_x, weight_y, weight_L, weight_xx, ...
-    weight_yy, weight_xy, Nearest_Idx, NxNy1, NxNy2, k)
+weight_yy, weight_xy, Nearest_Idx, NxNy1, NxNy2, k)
 %ASSEMBLE_GLOBAL_MATRICES Convert local weights to global sparse matrices
 %
 % INPUTS:

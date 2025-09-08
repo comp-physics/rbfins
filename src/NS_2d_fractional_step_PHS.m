@@ -1,5 +1,5 @@
 function [W3, p] = NS_2d_fractional_step_PHS(dt, nu, W1, W2, Dy, Dx, L_inv, L_u_inv, L_v_inv, L0, L_B, ~, ...
-    L_W, L_B_y, L_B_S, D0_12_x, D0_12_y, D0_21_x, D0_21_y, Dy_b, Dy_b_1, D0_12_x_obs, D0_12_y_obs, p0, ~)
+L_W, L_B_y, L_B_S, D0_12_x, D0_12_y, D0_21_x, D0_21_y, Dy_b, Dy_b_1, D0_12_x_obs, D0_12_y_obs, p0, ~)
 %NS_2D_FRACTIONAL_STEP_PHS Fractional step method for 2D incompressible Navier-Stokes equations
 %
 % This function implements the fractional step method for incompressible Navier-Stokes:
