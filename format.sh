@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🎨 MATLAB Code Formatter (MISS_HIT)${NC}"
+echo -e "${BLUE}[FORMAT] MATLAB Code Formatter (MISS_HIT)${NC}"
 echo "=================================="
 
 # Check if we're in a virtual environment or if MISS_HIT is available
@@ -25,7 +25,7 @@ if ! command -v mh_style &> /dev/null; then
         echo -e "${YELLOW}Creating virtual environment...${NC}"
         python3 -m venv venv
         if [ $? -ne 0 ]; then
-            echo -e "${RED}❌ Failed to create virtual environment. Please ensure Python 3 is installed.${NC}"
+            echo -e "${RED}[ERROR] Failed to create virtual environment. Please ensure Python 3 is installed.${NC}"
             exit 1
         fi
         
@@ -36,18 +36,18 @@ if ! command -v mh_style &> /dev/null; then
         pip install --upgrade pip
         pip install miss_hit
         if [ $? -ne 0 ]; then
-            echo -e "${RED}❌ Failed to install MISS_HIT${NC}"
+            echo -e "${RED}[ERROR] Failed to install MISS_HIT${NC}"
             exit 1
         fi
         
-        echo -e "${GREEN}✅ Virtual environment created and MISS_HIT installed!${NC}"
+        echo -e "${GREEN}[SUCCESS] Virtual environment created and MISS_HIT installed!${NC}"
     fi
 fi
 
 # Check if MISS_HIT is now available
 if ! command -v mh_style &> /dev/null; then
-    echo -e "${RED}❌ MISS_HIT still not found after setup${NC}"
-    echo -e "${YELLOW}💡 Try installing manually: pip install miss_hit${NC}"
+    echo -e "${RED}[ERROR] MISS_HIT still not found after setup${NC}"
+    echo -e "${YELLOW}[INFO] Try installing manually: pip install miss_hit${NC}"
     exit 1
 fi
 
@@ -61,9 +61,9 @@ mh_style --line_length 140 --fix src/ tests/ config.m simulate.m --brief
 # Check final status
 echo -e "${YELLOW}Final formatting check...${NC}"
 if mh_style --line_length 140 src/ tests/ config.m simulate.m --brief; then
-    echo -e "${GREEN}🎉 All files are properly formatted!${NC}"
+    echo -e "${GREEN}[SUCCESS] All files are properly formatted!${NC}"
 else
-    echo -e "${YELLOW}⚠️  Some style issues remain (may require manual fixing)${NC}"
-    echo -e "${YELLOW}💡 Check the output above for details${NC}"
+    echo -e "${YELLOW}[WARNING] Some style issues remain (may require manual fixing)${NC}"
+    echo -e "${YELLOW}[INFO] Check the output above for details${NC}"
     exit 1
 fi

@@ -50,20 +50,20 @@ classdef BaseGeometryTest < matlab.unittest.TestCase
                 success = evalin('base', 'success');
 
                 if success
-                    fprintf('✅ %s simulation executed successfully without errors!\n', ...
+                    fprintf('[PASS] %s simulation executed successfully without errors!\n', ...
                             testCase.GEOMETRY_TYPE);
                     testCase.verifyTrue(true, sprintf('%s simulation completed successfully', ...
                                                       testCase.GEOMETRY_TYPE));
                 else
                     errorMsg = evalin('base', 'errorMsg');
-                    fprintf('❌ %s simulation failed with error: %s\n', ...
+                    fprintf('[FAIL] %s simulation failed with error: %s\n', ...
                             testCase.GEOMETRY_TYPE, errorMsg);
                     testCase.verifyTrue(false, sprintf('%s simulation failed: %s', ...
                                                        testCase.GEOMETRY_TYPE, errorMsg));
                 end
 
             catch ME
-                fprintf('❌ Test execution failed: %s\n', ME.message);
+                fprintf('[ERROR] Test execution failed: %s\n', ME.message);
                 testCase.verifyTrue(false, sprintf('Test execution failed: %s', ME.message));
             end
         end
@@ -95,10 +95,10 @@ classdef BaseGeometryTest < matlab.unittest.TestCase
                     end
                 end
 
-                fprintf('✅ %s configuration test passed!\n', testCase.GEOMETRY_TYPE);
+                fprintf('[PASS] %s configuration test passed!\n', testCase.GEOMETRY_TYPE);
 
             catch ME
-                fprintf('❌ %s configuration test failed: %s\n', testCase.GEOMETRY_TYPE, ME.message);
+                fprintf('[FAIL] %s configuration test failed: %s\n', testCase.GEOMETRY_TYPE, ME.message);
                 testCase.verifyTrue(false, sprintf('%s configuration test failed: %s', ...
                                                    testCase.GEOMETRY_TYPE, ME.message));
             end

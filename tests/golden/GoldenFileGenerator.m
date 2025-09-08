@@ -122,7 +122,7 @@ classdef GoldenFileGenerator
                 try
                     GoldenFileGenerator.generateGoldenFile(geometries{i});
                 catch ME
-                    fprintf('❌ Failed to generate %s golden file: %s\n', geometries{i}, ME.message);
+                    fprintf('[ERROR] Failed to generate %s golden file: %s\n', geometries{i}, ME.message);
                 end
                 % Clear variables for next iteration
                 clear xy1 W U V xy1_sorted U_sorted V_sorted meta gold;
