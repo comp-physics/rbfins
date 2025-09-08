@@ -23,7 +23,7 @@ config.mesh.refine_b2 = 0.08;             % Mesh refinement parameter B2
 config.mesh.edge_multiplier = 3;          % Multiplier for edge generation from triangles
 
 %% Geometry Parameters (obstacle-generic naming)
-config.geometry.type = 'cylinder';        % Geometry type: 'cylinder' or 'ellipse'
+config.geometry.type = 'ellipse';        % Geometry type: 'cylinder' or 'ellipse'
 config.geometry.obstacle_radius = 0.5;    % Obstacle radius (for cylinder geometry)
 config.geometry.ellipse_a = 0.6;          % Ellipse semi-major axis (x-direction)
 config.geometry.ellipse_b = 0.4;          % Ellipse semi-minor axis (y-direction)

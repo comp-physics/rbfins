@@ -67,8 +67,6 @@ U1(L_W+1:L_W+L_B_y) = -(Dy_b * U1) ./ Dy_b_1; % Wall BC: du/dy = 0
 % v-velocity boundary conditions
 V1(L_W+1:L_W+L_B_y) = V(L_W+1:L_W+L_B_y); % Wall BC: v = 0 (no penetration)
 V1(end-L_B+1:end-0) = V(end-L_B+1:end-0); % Obstacle + inlet BCs for v
-%
-%
 
 %% STEP 2: Viscous diffusion using Crank-Nicolson method
 % Treat diffusion terms implicitly for stability: u** = u* + dt*nu*del^2*u
@@ -111,7 +109,7 @@ p = L_inv(F); % Solve using precomputed LU factorization
 
 % Extract pressure field (remove regularization constraint)
 p = p(1:(length(F0) + L_B_S)); % Remove regularization component
-% F is not used after this point, so we don't need to update it
+
 %% STEP 4: Velocity correction using pressure gradient
 % Apply pressure correction: u^(n+1) = u** - dt * grad(p)
 
