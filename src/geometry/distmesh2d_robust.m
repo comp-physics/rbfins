@@ -29,7 +29,7 @@ if ~isempty(pfix), p=setdiff(p,pfix,'rows'); end    % Remove duplicated nodes
         pold=inf;                                           % For first iteration
         fprintf('DistMesh (robust): ');
 
-        while count < maxiter
+        while count < maxiter %#ok<*ALIGN>
             count=count+1;
             if mod(count,20)==0, fprintf('%d ',count); end
 

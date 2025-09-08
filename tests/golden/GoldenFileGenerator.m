@@ -24,7 +24,7 @@ methods (Static)
     % Load config for metadata first
     % Store geometry type before simulate clears variables
     geometryType = geomType;
-    
+
     cfg = config(geometryType);
 
     % Run the simulation
@@ -96,7 +96,7 @@ methods (Static)
     end
 
     outFile = fullfile(outDir, sprintf('%s_Re%d_Nt%d_dt%g_seed%d.mat', ...
-        geometryType, meta.reynolds_number, meta.num_time_steps, meta.time_step, meta.random_seed));
+    geometryType, meta.reynolds_number, meta.num_time_steps, meta.time_step, meta.random_seed));
 
     save(outFile, 'gold', '-v7');
 
