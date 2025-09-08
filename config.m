@@ -11,7 +11,7 @@ function config = config(geometry_type)
 %   cfg = config('rectangle');         % Rectangle geometry
 
 if nargin < 1
-    geometry_type = 'cylinder';  % Default geometry
+    geometry_type = 'rectangle';  % Default geometry
 end
 
 %% Domain Configuration

@@ -35,6 +35,12 @@ a2 = cfg.mesh.refine_a2;
 b2 = cfg.mesh.refine_b2;
 
 %% Define rectangle-specific distance functions for DistMesh
+% Rectangle bounds for the obstacle (needed for mesh refinement)
+rect_x1 = rect_x_center - rect_width/2;
+rect_x2 = rect_x_center + rect_width/2;
+rect_y1 = rect_y_center - rect_height/2;
+rect_y2 = rect_y_center + rect_height/2;
+
 % Use rounded rectangle with very small corner radius for near-rectangular shape
 % Small radius prevents sharp corner convergence issues
 corner_radius = min(rect_width, rect_height) * 0.03; % 3% rounding - minimal but smooth
