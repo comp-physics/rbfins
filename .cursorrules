@@ -1,0 +1,273 @@
+# Cursor Rules for RBF Incompressible Navier-Stokes MATLAB Codebase
+
+## Project Overview
+This is a MATLAB implementation of a mesh-free Radial Basis Function Finite Difference (RBF-FD) method for solving incompressible Navier-Stokes equations around obstacles. The code supports multiple geometries (cylinder, ellipse, rectangle) and uses Polyharmonic Spline (PHS) basis functions with polynomial augmentation.
+
+## Core Architecture Principles
+
+### 1. Mathematical Foundation
+- **RBF-FD Method**: Uses Polyharmonic Spline basis functions φ(r) = r^m with polynomial augmentation
+- **Staggered Grid**: Pressure on P-grid (xy_s), velocity on V-grid (xy)
+- **Fractional Step Method**: Adams-Bashforth for advection, Crank-Nicolson for diffusion, projection for incompressibility
+- **Mesh-Free Approach**: Uses scattered node distributions with local stencils (k=35 neighbors typically)
+
+### 2. Code Organization
+```
+src/                    # Core simulation functions
+├── geometry/          # Geometry-specific mesh generation
+├── RBF_PHS_FD_all.m  # Core RBF-FD differentiation matrices
+├── NS_2d_fractional_step_PHS.m  # Time stepping
+├── build_*.m         # System assembly functions
+└── *.m               # Utility functions
+
+tests/                 # Unit tests with golden file validation
+lib/distmesh/         # External DistMesh library
+config.m              # Unified configuration system
+simulate.m            # Main simulation entry point
+```
+
+## MATLAB Coding Standards
+
+### 1. Function Documentation
+- **Always include comprehensive function headers** with:
+  - Purpose description
+  - Mathematical background when relevant
+  - Input/output specifications with dimensions [N x M]
+  - Algorithm overview
+  - References to papers when applicable
+  - Example usage for complex functions
+
+```matlab
+function [D_all] = RBF_PHS_FD_all(xy1, xy_s, Nearest_Idx, k, m, d)
+    %RBF_PHS_FD_ALL Generate global RBF-FD differentiation matrices using PHS + polynomials
+    %
+    % INPUTS:
+    %   xy1         - Target node coordinates [N1 x 2] where derivatives are evaluated
+    %   xy_s        - Source node coordinates [N2 x 2] where function values are known
+    %   Nearest_Idx - Index matrix [N1 x k] of k nearest neighbors for each target node
+    %   k           - Stencil size (number of nearest neighbors used in local stencils)
+    %   m           - Order of PHS-RBF (r^m, typically m=3 for 2D problems)
+    %   d           - Degree of polynomial augmentation (-1=none, 0=constant, 1=linear, 2=quadratic)
+    %
+    % OUTPUTS:
+    %   D_all       - Cell array containing sparse differentiation matrices:
+    %                 {Dx, Dy, L, Dxx, Dyy, Dxy}
+```
+
+### 2. Variable Naming Conventions
+- **Matrices**: Use descriptive names with dimensions implied
+  - `xy1`, `xy_s` for coordinate arrays
+  - `D_all` for differentiation matrix collections
+  - `L_inv` for precomputed inverse operators
+- **Indices**: Use `_idx` suffix (e.g., `Nearest_Idx`, `boundary_idx`)
+- **Geometry**: Use geometry-specific prefixes (e.g., `rect_width`, `ellipse_a`)
+- **Physical quantities**: Use standard notation (e.g., `nu` for viscosity, `dt` for time step)
+
+### 3. Configuration System
+- **Use unified config.m**: All parameters centralized in geometry-parameterized config
+- **Environment variable support**: Support `GEOMETRY_TYPE` environment variable
+- **Geometry-specific sections**: Separate configuration blocks for each geometry type
+- **No hardcoded parameters**: All numerical values should be configurable
+
+### 4. Code Formatting (MISS_HIT Standards)
+- **Line length**: Maximum 140 characters
+- **Indentation**: 4 spaces, no tabs
+- **Operator spacing**: Spaces around operators (`a + b`, not `a+b`)
+- **Function calls**: Break long parameter lists across lines with proper alignment
+- **Comments**: Use `%` for single-line, `%%` for section headers
+
+```matlab
+% Good: Proper line breaking for long function calls
+[D_all] = RBF_PHS_FD_all(xy1, xy_s, Nearest_Idx, k, ...
+                         config.rbf.phs_order, config.rbf.poly_degree);
+
+% Good: Proper operator spacing
+result = (a + b) * c / d;
+```
+
+### 5. Error Handling and Validation
+- **Input validation**: Check dimensions and ranges for critical functions
+- **Graceful degradation**: Handle missing files, failed convergence
+- **Informative error messages**: Include context and suggested fixes
+- **CI/Test compatibility**: Use environment variables to detect test/CI mode
+
+```matlab
+% Input validation example
+if size(xy1, 2) ~= 2
+    error('xy1 must be an [N x 2] coordinate array');
+end
+
+% CI detection pattern
+isCI = strcmpi(getenv('CI'), 'true');
+isTest = strcmpi(getenv('MATLAB_TEST'), 'true');
+```
+
+## Geometry System Architecture
+
+### 1. Geometry Independence
+- **Unified interface**: All geometries use same function signatures
+- **Parameterized functions**: Geometry-specific parameters passed through config
+- **Consistent naming**: Use `obstacle_*` for geometry-agnostic parameters
+- **Mesh generation**: Each geometry has dedicated `make_*_geometry.m` function
+
+### 2. Geometry-Specific Implementation
+- **Distance functions**: Use DistMesh-compatible distance functions (e.g., `drectangle`, `dcircle`)
+- **Boundary conditions**: Geometry-agnostic boundary condition application
+- **Mesh refinement**: Geometry-specific refinement parameters in config
+- **Robust meshing**: Use `distmesh2d_robust.m` for challenging geometries
+
+### 3. Adding New Geometries
+When adding new geometries, follow this pattern:
+1. Add geometry parameters to `config.m`
+2. Create `make_[geometry]_geometry.m` in `src/geometry/`
+3. Implement distance function if needed
+4. Add test class inheriting from `BaseGeometryTest`
+5. Generate golden reference file
+6. Update documentation
+
+## Testing Framework
+
+### 1. Test Structure
+- **Inheritance-based**: All geometry tests inherit from `BaseGeometryTest`
+- **Golden file validation**: Compare against reference solutions
+- **Smoke tests**: Basic execution without errors
+- **Configuration tests**: Validate config structure and values
+
+### 2. Test Implementation Pattern
+```matlab
+classdef TestGolden[Geometry] < BaseGeometryTest
+    properties (Constant)
+        GEOMETRY_TYPE = '[geometry]'
+        EXPECTED_FIELDS = {'field1', 'field2', ...}
+    end
+end
+```
+
+### 3. Golden File Management
+- **Consistent naming**: `[geometry]_Re100_Nt20_dt0.01_seed42.mat`
+- **Reproducible generation**: Fixed random seed, reduced time steps
+- **Metadata inclusion**: Algorithm, geometry, parameters, timestamp
+- **Tolerance-based comparison**: Separate tolerances for coordinates and velocities
+
+### 4. CI Integration
+- **Environment detection**: Use `CI` and `MATLAB_TEST` environment variables
+- **Headless execution**: Disable plotting in CI/test environments
+- **Timeout handling**: Reasonable timeouts for different test types
+- **Artifact collection**: Save test results and logs
+
+## Performance and Numerical Considerations
+
+### 1. Matrix Operations
+- **Sparse matrices**: Use sparse storage for differentiation matrices
+- **Precomputed factorizations**: Store LU decompositions for repeated solves
+- **Vectorized operations**: Avoid loops where possible, leverage MATLAB's JIT
+- **Memory efficiency**: Clear large temporary variables when appropriate
+
+### 2. Numerical Stability
+- **Condition number monitoring**: Check matrix conditioning in critical operations
+- **Scaling**: Use local coordinate scaling in RBF-FD weight computation
+- **Convergence criteria**: Appropriate tolerances for DistMesh and time stepping
+- **Regularization**: Handle near-singular cases in RBF systems
+
+### 3. Algorithm-Specific Guidelines
+- **RBF-FD stencils**: Use k=35 neighbors, m=3 PHS order, d=3 polynomial degree as defaults
+- **Time stepping**: dt=0.01, nu=0.01 (Re=100) for standard validation cases
+- **Mesh density**: Balance accuracy vs. computational cost, geometry-dependent
+- **Boundary treatment**: Higher-order stencils near obstacles, standard elsewhere
+
+## Development Workflow
+
+### 1. Code Quality Tools
+- **Linting**: Use MATLAB Code Analyzer with project-specific ignore list
+- **Formatting**: Use MISS_HIT (mh_style) with 140-character line limit
+- **Local formatting**: Run `./format.sh` before commits
+- **CI validation**: Automatic linting and formatting checks on PRs
+
+### 2. Version Control Practices
+- **Atomic commits**: Each commit should represent a single logical change
+- **Descriptive messages**: Include context and impact of changes
+- **Branch naming**: Use descriptive names (e.g., `feature/rectangle-geometry`)
+- **Clean history**: Squash related commits before merging
+
+### 3. Documentation Updates
+- **README maintenance**: Keep usage examples and feature lists current
+- **Function documentation**: Update headers when changing interfaces
+- **Configuration documentation**: Document new parameters and their effects
+- **Mathematical documentation**: Include relevant equations and references
+
+## File Organization Rules
+
+### 1. Directory Structure
+- **src/**: Core simulation functions only
+- **src/geometry/**: Geometry-specific mesh generation and utilities
+- **tests/**: All test files, including golden references
+- **lib/**: External libraries (DistMesh)
+- **old/**: Archive directory for deprecated code (avoid accumulation)
+
+### 2. File Naming
+- **Functions**: Use descriptive names matching primary function (e.g., `build_pressure_system.m`)
+- **Classes**: Use PascalCase (e.g., `BaseGeometryTest.m`)
+- **Scripts**: Use lowercase with underscores (e.g., `setup_paths.m`)
+- **Golden files**: Follow pattern `[geometry]_Re[reynolds]_Nt[steps]_dt[timestep]_seed[seed].mat`
+
+### 3. Dependencies
+- **Minimal external dependencies**: Only DistMesh library required
+- **Self-contained**: All custom functions in src/ directory
+- **Clear interfaces**: Well-defined function signatures between modules
+- **Backward compatibility**: Avoid breaking changes to public interfaces
+
+## Mathematical and Physical Constraints
+
+### 1. Dimensional Consistency
+- **Coordinate systems**: Use consistent units throughout (typically dimensionless)
+- **Physical parameters**: Reynolds number, time scales, length scales
+- **Boundary conditions**: Ensure physical consistency across geometries
+- **Validation cases**: Use established benchmark problems when possible
+
+### 2. Numerical Method Constraints
+- **Stencil size**: Minimum k > (d+1)(d+2)/2 + m for stability
+- **Time step**: CFL condition and diffusion stability limits
+- **Mesh quality**: Avoid highly skewed or degenerate elements
+- **Convergence**: Monitor residuals and solution changes
+
+### 3. Geometry Constraints
+- **Obstacle placement**: Ensure adequate domain size relative to obstacle
+- **Mesh resolution**: Sufficient points to resolve boundary layers
+- **Aspect ratios**: Reasonable geometry proportions for numerical stability
+- **Boundary separation**: Adequate spacing between different boundary types
+
+## Debugging and Troubleshooting Guidelines
+
+### 1. Common Issues
+- **Matrix singularity**: Check stencil sizes and polynomial degrees
+- **Mesh generation failure**: Adjust DistMesh parameters, use robust version
+- **Convergence problems**: Reduce time step, check boundary conditions
+- **Memory issues**: Use sparse matrices, clear temporary variables
+
+### 2. Diagnostic Tools
+- **Visualization**: Plot meshes, velocity fields, pressure contours
+- **Condition numbers**: Monitor matrix conditioning
+- **Residual tracking**: Plot convergence histories
+- **Profiling**: Use MATLAB profiler for performance bottlenecks
+
+### 3. Validation Strategies
+- **Method of manufactured solutions**: Test with known analytical solutions
+- **Grid convergence**: Verify solution convergence with mesh refinement
+- **Benchmark comparisons**: Compare against established results
+- **Conservation checks**: Verify mass conservation and energy balance
+
+## Security and Robustness
+
+### 1. Input Sanitization
+- **File path validation**: Check for valid paths and permissions
+- **Parameter bounds**: Validate numerical parameters are within reasonable ranges
+- **Configuration validation**: Ensure required fields are present and valid
+- **Environment variable handling**: Safe parsing of environment inputs
+
+### 2. Error Recovery
+- **Graceful failures**: Provide meaningful error messages and recovery suggestions
+- **Resource cleanup**: Ensure proper cleanup of temporary files and variables
+- **State preservation**: Maintain simulation state for debugging
+- **Logging**: Comprehensive logging for debugging and monitoring
+
+This comprehensive set of rules should guide development while maintaining the mathematical rigor and computational efficiency required for this RBF-FD Navier-Stokes simulation codebase.
