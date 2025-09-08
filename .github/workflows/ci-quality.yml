@@ -33,26 +33,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab@v2
-      
-      - name: Run formatter and check for changes
-        uses: matlab-actions/run-command@v2
+      - name: Setup Python for MISS_HIT
+        uses: actions/setup-python@v4
         with:
-          command: format_code
+          python-version: '3.x'
       
-      - name: Check if formatting changed any files
+      - name: Install MISS_HIT formatter
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "❌ Code is not properly formatted!"
-            echo "The following files need formatting:"
-            git status --porcelain
+          python -m pip install --upgrade pip
+          pip install miss_hit
+      
+      - name: Check MATLAB formatting
+        run: |
+          echo "🎨 Checking MATLAB code formatting..."
+          if mh_style --line_length 140 src/ tests/ config.m simulate.m --brief; then
+            echo "✅ All MATLAB files are properly formatted!"
+          else
+            echo "❌ MATLAB formatting issues found!"
+            echo ""
+            echo "📋 Detailed formatting report:"
+            mh_style --line_length 140 src/ tests/ config.m simulate.m
             echo ""
             echo "🔧 To fix locally, run: ./format.sh"
-            echo ""
-            echo "📋 Diff of required changes:"
-            git diff
+            echo "💡 This will automatically fix most formatting issues"
             exit 1
-          else
-            echo "✅ All code is properly formatted!"
           fi

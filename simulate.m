@@ -84,11 +84,13 @@ boundary = [boundary_y; boundary_out; boundary_in; boundary_obs];
 % Initial mesh visualization
 if doPlot
     figure;
-    scatter(xy(:,1),xy(:,2),'k.'); hold on; axis square;
-    scatter(boundary_in(:,1),boundary_in(:,2),'b+');
-    scatter(boundary_y(:,1),boundary_y(:,2),'r+');
-    scatter(boundary_out(:,1),boundary_out(:,2),'b+');
-    scatter(boundary_obs(:,1),boundary_obs(:,2),'m+');
+    scatter(xy(:, 1), xy(:, 2), 'k.');
+    hold on;
+    axis square;
+    scatter(boundary_in(:, 1), boundary_in(:, 2), 'b+');
+    scatter(boundary_y(:, 1), boundary_y(:, 2), 'r+');
+    scatter(boundary_out(:, 1), boundary_out(:, 2), 'b+');
+    scatter(boundary_obs(:, 1), boundary_obs(:, 2), 'm+');
     axis equal;
 end
 
@@ -97,21 +99,21 @@ xy1 = [xy; boundary];      % Complete velocity grid (V-grid): interior + boundar
 xy1_s = [xy_s; boundary_s]; % Complete pressure grid (P-grid): interior + boundary
 
 % Extract coordinates for convenience
-x1 = xy1(:,1);   % x-coordinates of velocity nodes
-y1 = xy1(:,2);   % y-coordinates of velocity nodes
-x1_s = xy1_s(:,1); % x-coordinates of pressure nodes
-y1_s = xy1_s(:,2); % y-coordinates of pressure nodes
-x0 = xy(:,1);    % x-coordinates of interior velocity nodes only
-y0 = xy(:,2);    % y-coordinates of interior velocity nodes only
-x0_s = xy_s(:,1); % x-coordinates of interior pressure nodes only
-y0_s = xy_s(:,2); % y-coordinates of interior pressure nodes only
+x1 = xy1(:, 1);   % x-coordinates of velocity nodes
+y1 = xy1(:, 2);   % y-coordinates of velocity nodes
+x1_s = xy1_s(:, 1); % x-coordinates of pressure nodes
+y1_s = xy1_s(:, 2); % y-coordinates of pressure nodes
+x0 = xy(:, 1);    % x-coordinates of interior velocity nodes only
+y0 = xy(:, 2);    % y-coordinates of interior velocity nodes only
+x0_s = xy_s(:, 1); % x-coordinates of interior pressure nodes only
+y0_s = xy_s(:, 2); % y-coordinates of interior pressure nodes only
 
 % Define distance thresholds for special RBF treatment near boundaries
 x_min_dist = cfg.distances.x_min;  % Distance threshold from left boundary
 x_max_dist = cfg.distances.x_max;  % Distance threshold from right boundary
 y_min_dist = cfg.distances.y_min;  % Distance threshold from bottom boundary
 y_max_dist = cfg.distances.y_max;  % Distance threshold from top boundary
-r_dist = cfg.mesh.refine_a2*cfg.mesh.edge_multiplier;  % Distance threshold from cylinder
+r_dist = cfg.mesh.refine_a2 * cfg.mesh.edge_multiplier;  % Distance threshold from cylinder
 
 %% 3) Build stencils for RBF-FD method
 S = build_stencils(xy1, xy1_s, xy, xy_s, G, cfg);
@@ -147,43 +149,50 @@ dt = cfg.simulation.time_step;  % Time step size
 [W, p0] = init_state(xy1, xy1_s, boundary_obs, Nt);
 
 % Define useful index lengths for boundary handling
-L_B = length(boundary_obs)+length(boundary_in);   % Total special boundaries
+L_B = length(boundary_obs) + length(boundary_in);   % Total special boundaries
 L_B_y = length(boundary_y);   % Wall boundaries
 L_W = length(xy);             % Interior velocity nodes
 L_B_obs = length(boundary_obs);   % Obstacle boundary nodes
 
 % Define pressure boundary indices for easy access
-Idx_y_s = length(xy_s)+1: length(xy_s)+length(boundary_y_s);    % Wall pressure indices
-Idx_in_s = length(xy1_s)+1-length(boundary_obs_s)-length(boundary_in_s): length(xy1_s)-length(boundary_obs_s);  % Inlet pressure indices
-Idx_out_s = length(xy_s)+1+length(boundary_y_s): length(xy_s)+length(boundary_out_s)+length(boundary_y_s);  % Outlet pressure indices
+Idx_y_s = length(xy_s) + 1:length(xy_s) + length(boundary_y_s);    % Wall pressure indices
+Idx_in_s = length(xy1_s) + 1 - length(boundary_obs_s) - length(boundary_in_s): ...
+           length(xy1_s) - length(boundary_obs_s);  % Inlet pressure indices
+Idx_out_s = length(xy_s) + 1 + length(boundary_y_s): ...
+            length(xy_s) + length(boundary_out_s) + length(boundary_y_s);  % Outlet pressure indices
 
 %% 10) Main time-stepping loop: Fractional Step Method
 for j = 1:Nt
     if cfg.simulation.show_progress && ~isCI && ~isTest
-        disp(['Time step j = ' num2str(j)])
+        disp(['Time step j = ' num2str(j)]);
     end
 
     % Use different schemes for startup vs main integration
     if j < 3
         % First few steps: use simple first-order scheme for stability
-        W(:,j+1) = W(:,j);  % Copy previous solution for startup
+        W(:, j + 1) = W(:, j);  % Copy previous solution for startup
     else
         % Main fractional step algorithm implemented in NS_2d_fractional_step_PHS
         % This performs: 1) Advection-diffusion step with Adams-Bashforth + Crank-Nicolson
         %                2) Pressure correction step to enforce incompressibility
         %                3) Velocity correction using pressure gradient
-        [W(:,j+1),p0] = NS_2d_fractional_step_PHS(dt,nu,W(:,j-1),W(:,j),Dy,Dx,L_inv_s,L_u_inv,L_v_inv,L0,L_B,L_B_obs,L_W,L_B_y,length(boundary_s),D0_12_x,D0_12_y,D0_21_x,D0_21_y,Dy_b,Dy_b_1,D0_21_x_obs,D0_21_y_obs,p0,W(:,1));
+        [W(:, j + 1), p0] = NS_2d_fractional_step_PHS(dt, nu, W(:, j - 1), W(:, j), ...
+                                                      Dy, Dx, L_inv_s, L_u_inv, L_v_inv, ...
+                                                      L0, L_B, L_B_obs, L_W, L_B_y, ...
+                                                      length(boundary_s), D0_12_x, D0_12_y, ...
+                                                      D0_21_x, D0_21_y, Dy_b, Dy_b_1, ...
+                                                      D0_21_x_obs, D0_21_y_obs, p0, W(:, 1));
     end
 
     % Check for numerical instability
-    if isnan(W(1,j+1))
+    if isnan(W(1, j + 1))
         warning('Simulation became unstable (NaN detected). Stopping at time step %d', j);
-        break;
+        break
     end
 end
 
 % Extract final velocity field for potential continuation
-W0 = W(:,end);
+W0 = W(:, end);
 
 %% 11) Visualization of final results
 visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max);

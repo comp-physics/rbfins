@@ -131,10 +131,9 @@ This repository includes comprehensive automated testing using GitHub Actions to
 
 8. **Code Quality Tools**:
    - **MATLAB Code Analyzer**: Integrated linting checks for code quality
-   - **Unified Code Formatting**: 
-     - **Local**: Run `./format.sh` or `matlab -batch "format_code"` to format all code
+   - **Professional Code Formatting (MISS_HIT)**: 
+     - **Local**: Run `./format.sh` to format all code using MISS_HIT formatter
      - **CI**: Automatically checks if code is properly formatted on pull requests
-     - **Idempotent**: Formatter only modifies files when changes are needed
    - **CI Integration**: Both linting and formatting checks run automatically on pull requests
 
 #### Key Components
