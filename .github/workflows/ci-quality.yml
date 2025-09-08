@@ -36,7 +36,23 @@ jobs:
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v2
       
-      - name: Run formatting checks
+      - name: Run formatter and check for changes
         uses: matlab-actions/run-command@v2
         with:
-          command: addpath('.github/scripts'); format_check_simple
+          command: format_code
+      
+      - name: Check if formatting changed any files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "❌ Code is not properly formatted!"
+            echo "The following files need formatting:"
+            git status --porcelain
+            echo ""
+            echo "🔧 To fix locally, run: ./format.sh"
+            echo ""
+            echo "📋 Diff of required changes:"
+            git diff
+            exit 1
+          else
+            echo "✅ All code is properly formatted!"
+          fi

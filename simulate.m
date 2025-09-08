@@ -15,15 +15,21 @@ if exist(srcPath, 'dir')
     end
 end
 
-% Load Configuration
-cfg = config();
+% Load configuration parameters (can be overridden by setting CONFIG_FUNC environment variable)
+config_func_name = getenv('CONFIG_FUNC');
+if isempty(config_func_name)
+    cfg = config(); % Default config
+else
+    % Use specified config function (e.g., config_cylinder, config_ellipse, config_rectangle)
+    cfg = feval(config_func_name);
+end
 
 %% 1) Setup environment and dependencies
 [doPlot, isCI, isTest, Nt] = setup_environment(cfg, scriptDir);
 
 % Extract domain parameters - define computational domain boundaries
 x_min = cfg.domain.x_min;  % Left boundary of domain
-x_max = cfg.domain.x_max;  % Right boundary of domain  
+x_max = cfg.domain.x_max;  % Right boundary of domain
 y_min = cfg.domain.y_min;  % Bottom boundary of domain
 y_max = cfg.domain.y_max;  % Top boundary of domain
 
@@ -53,8 +59,12 @@ if isfield(G, 'radius')
     obs_char_length = radius;    % Characteristic length for distance calculations
 elseif isfield(G, 'a') && isfield(G, 'b')
     a = G.a;                     % Ellipse semi-major axis
-    b = G.b;                     % Ellipse semi-minor axis  
+    b = G.b;                     % Ellipse semi-minor axis
     obs_char_length = min(a, b); % Use minimum axis as characteristic length
+elseif isfield(G, 'rect_width') && isfield(G, 'rect_height')
+    rect_width = G.rect_width;   % Rectangle width
+    rect_height = G.rect_height; % Rectangle height
+    obs_char_length = min(rect_width, rect_height) / 2; % Use half of smaller dimension
 else
     error('Geometry structure missing expected parameters');
 end
@@ -110,12 +120,12 @@ D0_21_y_obs = P.D0_21_y_obs;
 %% 6) Build velocity operators and boundary conditions
 Vops = build_velocity_operators(G, xy, xy1, boundary_y, boundary_out, S, cfg, cfg.distances);
 
-Dx = Vops.Dx; 
-Dy = Vops.Dy; 
+Dx = Vops.Dx;
+Dy = Vops.Dy;
 L0 = Vops.L0;
-Dy_b_0 = Vops.Dy_b_0; 
+Dy_b_0 = Vops.Dy_b_0;
 Dx_b_0 = Vops.Dx_b_0;
-Dy_b = Vops.Dy_b; 
+Dy_b = Vops.Dy_b;
 Dy_b_1 = Vops.Dy_b_1;
 
 %% 7) Precompute velocity system solvers
@@ -144,7 +154,7 @@ for j = 1:Nt
     if cfg.simulation.show_progress && ~isCI && ~isTest
         disp(['Time step j = ' num2str(j)])
     end
-    
+
     % Use different schemes for startup vs main integration
     if j < 3
         % First few steps: use simple first-order scheme for stability
@@ -156,7 +166,7 @@ for j = 1:Nt
         %                3) Velocity correction using pressure gradient
         [W(:,j+1),p0] = NS_2d_fractional_step_PHS(dt,nu,W(:,j-1),W(:,j),Dy,Dx,L_inv_s,L_u_inv,L_v_inv,L0,L_B,L_B_obs,L_W,L_B_y,length(boundary_s),D0_12_x,D0_12_y,D0_21_x,D0_21_y,Dy_b,Dy_b_1,D0_21_x_obs,D0_21_y_obs,p0,W(:,1));
     end
-    
+
     % Check for numerical instability
     if isnan(W(1,j+1))
         warning('Simulation became unstable (NaN detected). Stopping at time step %d', j);

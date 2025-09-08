@@ -2,7 +2,12 @@
 
 ### Detailed Description
 
-This MATLAB code implements a mesh-free method to solve the incompressible Navier-Stokes equations for flow around a cylinder using Polyharmonic Spline Radial Basis Functions (PHS-RBF). The approach uses a staggered grid formulation and a fractional step method for time integration.
+This MATLAB code implements a mesh-free method to solve the incompressible Navier-Stokes equations for flow around obstacles using Polyharmonic Spline Radial Basis Functions (PHS-RBF). The approach uses a staggered grid formulation and a fractional step method for time integration.
+
+**Supported Geometries**:
+- **Cylinder**: Circular obstacles (original implementation)
+- **Ellipse**: Elliptical obstacles with customizable semi-major and semi-minor axes
+- **Rectangle**: Rectangular obstacles with customizable width, height, and center position
 
 ### How to Run the Code
 
@@ -28,7 +33,10 @@ This MATLAB code implements a mesh-free method to solve the incompressible Navie
      - Time step: `config.simulation.time_step` (default: 1e-2)
      - Number of time steps: `config.simulation.num_time_steps` (default: 5000)
      - Domain size: `config.domain.x_min/x_max/y_min/y_max`
-     - Cylinder radius: `config.mesh.cylinder_radius` (default: 0.5)
+     - **Geometry Selection**: `config.geometry.type` ('cylinder', 'ellipse', or 'rectangle')
+     - **Cylinder**: `config.geometry.obstacle_radius` (default: 0.5)
+     - **Ellipse**: `config.geometry.ellipse_a` (semi-major axis), `config.geometry.ellipse_b` (semi-minor axis)
+     - **Rectangle**: `config.geometry.rect_width`, `config.geometry.rect_height`, `config.geometry.rect_x_center`, `config.geometry.rect_y_center`
      - RBF parameters: Various stencil sizes and polynomial degrees
    - **To modify parameters**: Edit the values in `config.m` - no need to touch the main code
    - **Configuration Structure**:
@@ -103,13 +111,10 @@ This repository includes automated testing using GitHub Actions to ensure the co
 
 6. **Code Quality Tools**:
    - **MATLAB Code Analyzer**: Run `addpath('.github/scripts'); lint` in MATLAB to check for code issues
-   - **MBeautifier Formatting** (Local only): 
-     - **Easy way**: `./format_matlab.sh` (auto-installs MBeautifier if needed)
-     - **Manual way**: 
-       1. Install MBeautifier: `git clone https://github.com/davidvarga/MBeautifier.git .github/scripts/MBeautifier`
-       2. Run formatter: `matlab -batch "addpath('.github/scripts'); format_matlab_code"`
-     - Note: MBeautifier requires MATLAB Editor and cannot run in CI environments
-   - **CI Integration**: Both linting and basic formatting checks run automatically on pull requests; full formatting should be done locally
+   - **Code Formatting**: 
+     - **Local**: Run `./format.sh` or `matlab -batch "format_code"` to format all code
+     - **CI**: Automatically checks if code is properly formatted on pull requests
+   - **CI Integration**: Both linting and formatting checks run automatically on pull requests
 
 #### Key Components
 

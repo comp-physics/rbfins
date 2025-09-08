@@ -10,7 +10,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]  # add macos-latest, windows-latest if desired
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15  # Add timeout to prevent hanging tests
+    timeout-minutes: 120  # Increased timeout for all geometry tests
 
     steps:
       - name: Checkout
@@ -36,12 +36,12 @@ jobs:
           echo "Checking tests directory..."
           ls -la tests || echo "tests directory not found"
 
-      - name: Run MATLAB unit tests
+      - name: Run all geometry tests
         uses: matlab-actions/run-tests@v2
         with:
           select-by-folder: tests
           test-results-junit: test-results/results.xml
-          source-folder: .  # Include the root directory in the path
+          source-folder: .
 
       - name: Upload test results
         if: always()
