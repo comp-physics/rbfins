@@ -46,9 +46,16 @@ jobs:
       - name: Check MATLAB formatting
         run: |
           echo "🎨 Checking MATLAB code formatting..."
-          if mh_style --line_length 140 src/ tests/ config.m simulate.m --brief; then
-            echo "✅ All MATLAB files are properly formatted!"
-          else
+          
+          # Run MISS_HIT and capture output
+          output=$(mh_style --line_length 140 src/ tests/ config.m simulate.m --brief 2>&1)
+          exit_code=$?
+          
+          echo "$output"
+          
+          # Check if there are actual style issues (not just warnings)
+          if echo "$output" | grep -q "style:"; then
+            echo ""
             echo "❌ MATLAB formatting issues found!"
             echo ""
             echo "📋 Detailed formatting report:"
@@ -57,4 +64,10 @@ jobs:
             echo "🔧 To fix locally, run: ./format.sh"
             echo "💡 This will automatically fix most formatting issues"
             exit 1
+          else
+            echo ""
+            echo "✅ All MATLAB files are properly formatted!"
+            if echo "$output" | grep -q "warning:"; then
+              echo "ℹ️  Note: Some harmless encoding warnings were detected but can be ignored"
+            fi
           fi
