@@ -108,18 +108,4 @@ config.visualization.plot_tick_y = [-5, 0, 5];
 config.visualization.plot_tick_x = [-5, 0, 5, 10, 15];
 config.visualization.color_axis_range = 1e-0;
 
-%% Backward Compatibility for Legacy Cylinder-Specific Naming
-% Maintain old naming for compatibility with existing code
-switch lower(geometry_type)
-case 'cylinder'
-    config.mesh.cylinder_radius = config.geometry.obstacle_radius;
-case {'ellipse', 'rectangle'}
-    config.mesh.cylinder_radius = 0.5; % Equivalent radius for compatibility
-end
-
-config.rbf.stencil_size_boundary_cylinder = config.rbf.stencil_size_boundary_obstacle;
-config.rbf.order_near_cylinder = config.rbf.order_near_obstacle;
-config.rbf.order_near_cylinder_poly = config.rbf.order_near_obstacle_poly;
-config.rbf.poly_degree_near_cylinder = config.rbf.poly_degree_near_obstacle;
-
 end
