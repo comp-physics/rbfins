@@ -129,14 +129,6 @@ This repository includes comprehensive automated testing using GitHub Actions to
    - Golden files are automatically generated and maintained
    - Follow the existing pattern in `TestCylinderGeometry.m`
 
-8. **Code Quality Tools**:
-   - **MATLAB Code Analyzer**: Integrated linting checks for code quality
-   - **Pre-commit Quality Checks**:
-     - **MATLAB Linting**: Run `./lint.sh` to run MATLAB Code Analyzer 
-     - **MATLAB Auto-fix**: Run `./lint_fix.sh` to automatically fix MATLAB code issues where possible
-     - **Style Formatting**: Run `./format.sh` to check and fix style issues
-   - **CI Integration**: Both linting and formatting checks run automatically on pull requests
-
 #### Key Components
 
 ##### 1. Domain and Mesh Generation

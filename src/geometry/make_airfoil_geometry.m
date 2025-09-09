@@ -64,13 +64,27 @@ function G = make_airfoil_geometry(cfg)
 
     %% Generate velocity grid nodes (V-grid) by adding edge midpoints
     % This creates a staggered grid arrangement for better pressure-velocity coupling
-    xy = zeros(length(xt) * cfg.mesh.edge_multiplier, 2);
-    for j = 1:length(xt)
-        % Add midpoint of each triangle edge to create velocity nodes
-        xy((j - 1) * cfg.mesh.edge_multiplier + 1, :) = (xy_s(xt(j, 1), :) + xy_s(xt(j, 2), :)) / 2; % Edge 1-2
-        xy((j - 1) * cfg.mesh.edge_multiplier + 2, :) = (xy_s(xt(j, 1), :) + xy_s(xt(j, 3), :)) / 2; % Edge 1-3
-        xy((j - 1) * cfg.mesh.edge_multiplier + 3, :) = (xy_s(xt(j, 2), :) + xy_s(xt(j, 3), :)) / 2; % Edge 2-3
-    end
+    % OPTIMIZED: Vectorized computation instead of loop
+    
+    n_triangles = size(xt, 1);
+    edge_mult = cfg.mesh.edge_multiplier;
+    
+    % Pre-allocate for all edge midpoints
+    xy = zeros(n_triangles * edge_mult, 2);
+    
+    % Vectorized computation of all edge midpoints
+    % Edge 1-2 midpoints
+    idx1 = 1:edge_mult:n_triangles * edge_mult;
+    xy(idx1, :) = (xy_s(xt(:, 1), :) + xy_s(xt(:, 2), :)) / 2;
+    
+    % Edge 1-3 midpoints  
+    idx2 = 2:edge_mult:n_triangles * edge_mult;
+    xy(idx2, :) = (xy_s(xt(:, 1), :) + xy_s(xt(:, 3), :)) / 2;
+    
+    % Edge 2-3 midpoints
+    idx3 = 3:edge_mult:n_triangles * edge_mult;
+    xy(idx3, :) = (xy_s(xt(:, 2), :) + xy_s(xt(:, 3), :)) / 2;
+    
     xy = unique(xy, 'rows'); % Remove duplicate nodes
 
     %% Extract and classify boundary nodes for pressure grid (P-grid)
@@ -121,33 +135,52 @@ function G = make_airfoil_geometry(cfg)
 
     % Extract airfoil boundary nodes - AIRFOIL-SPECIFIC
     % Use same airfoil distance function for velocity grid
-    airfoil_dist_v = abs(dairfoil(xy, airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack));
-    idx_b_airfoil = airfoil_dist_v < eps;
+    airfoil_dist_v_full = abs(dairfoil(xy, airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack));
+    idx_b_airfoil = airfoil_dist_v_full < eps;
     boundary_obs = xy(idx_b_airfoil, :);
     xy(idx_b_airfoil, :) = [];
 
     %% Compute obstacle normal vectors for pressure boundary conditions
     % For airfoil: compute normal vectors numerically using gradient of distance function
-    obs_normals_s = zeros(size(boundary_obs_s));
-
-    for i = 1:size(boundary_obs_s, 1)
-        x_pt = boundary_obs_s(i, 1);
-        y_pt = boundary_obs_s(i, 2);
-
-        % Compute gradient numerically using finite differences
+    % OPTIMIZED: Vectorized computation to avoid expensive loop
+    
+    n_boundary = size(boundary_obs_s, 1);
+    obs_normals_s = zeros(n_boundary, 2);
+    
+    if n_boundary > 0
+        % Compute gradient numerically using finite differences - VECTORIZED
         delta = eps * 100;
-        dx = (dairfoil([x_pt + delta, y_pt], airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack) - ...
-              dairfoil([x_pt - delta, y_pt], airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack)) / (2 * delta);
-        dy = (dairfoil([x_pt, y_pt + delta], airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack) - ...
-              dairfoil([x_pt, y_pt - delta], airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack)) / (2 * delta);
-
-        % Normalize to unit vector
-        grad_norm = sqrt(dx^2 + dy^2);
-        if grad_norm > eps
-            obs_normals_s(i, :) = [dx, dy] / grad_norm;
-        else
-            obs_normals_s(i, :) = [1, 0]; % Default for degenerate case
-        end
+        
+        % Create perturbed point arrays for vectorized dairfoil calls
+        x_pts = boundary_obs_s(:, 1);
+        y_pts = boundary_obs_s(:, 2);
+        
+        % Compute x-derivatives (4 calls instead of 4*N calls)
+        pts_x_plus = [x_pts + delta, y_pts];
+        pts_x_minus = [x_pts - delta, y_pts];
+        pts_y_plus = [x_pts, y_pts + delta];
+        pts_y_minus = [x_pts, y_pts - delta];
+        
+        % Vectorized dairfoil calls
+        d_x_plus = dairfoil(pts_x_plus, airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack);
+        d_x_minus = dairfoil(pts_x_minus, airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack);
+        d_y_plus = dairfoil(pts_y_plus, airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack);
+        d_y_minus = dairfoil(pts_y_minus, airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack);
+        
+        % Compute gradients
+        dx = (d_x_plus - d_x_minus) / (2 * delta);
+        dy = (d_y_plus - d_y_minus) / (2 * delta);
+        
+        % Normalize to unit vectors - VECTORIZED
+        grad_norm = sqrt(dx.^2 + dy.^2);
+        valid_idx = grad_norm > eps;
+        
+        % Set valid normals
+        obs_normals_s(valid_idx, 1) = dx(valid_idx) ./ grad_norm(valid_idx);
+        obs_normals_s(valid_idx, 2) = dy(valid_idx) ./ grad_norm(valid_idx);
+        
+        % Set default for degenerate cases
+        obs_normals_s(~valid_idx, :) = repmat([1, 0], sum(~valid_idx), 1);
     end
 
     % Verify normal vectors are reasonable
@@ -160,6 +193,7 @@ function G = make_airfoil_geometry(cfg)
     r_dist = cfg.mesh.refine_a2 * cfg.mesh.edge_multiplier;
 
     % For airfoil, use distance to airfoil boundary for proximity calculations
+    % OPTIMIZED: Compute distance for final xy array (after boundary extraction)
     airfoil_dist_V = abs(dairfoil(xy, airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack));
     airfoil_dist_P = abs(dairfoil(xy_s, airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack));
 

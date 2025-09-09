@@ -12,7 +12,7 @@ function config = config(geometry_type)
     %   cfg = config('airfoil');           % NACA airfoil geometry
 
     if nargin < 1
-        geometry_type = 'airfoil';  % Default geometry
+        geometry_type = 'rectangle';  % Default geometry
     end
 
     %% Domain Configuration
@@ -22,8 +22,8 @@ function config = config(geometry_type)
     config.domain.y_max = 8;
 
     %% Mesh Generation Parameters
-    config.mesh.dist = 0.1;                    % Mesh spacing (adjusted per geometry below)
-    config.mesh.boundary_eps = 0.002;          % Boundary tolerance
+    config.mesh.dist = 0.1;                   % Mesh spacing (adjusted per geometry below)
+    config.mesh.boundary_eps = 0.002;         % Boundary tolerance
     config.mesh.refine_a1 = 0.05;             % Mesh refinement parameter A1 (near obstacle)
     config.mesh.refine_b1 = 0.08;             % Mesh refinement parameter B1 (near obstacle)
     config.mesh.refine_a2 = 0.05;             % Mesh refinement parameter A2 (wake region)
@@ -50,7 +50,7 @@ function config = config(geometry_type)
             config.mesh.dist = 0.05;
         case 'airfoil'
             % NACA 4-digit series parameters
-            config.geometry.naca_digits = [0, 0, 1, 9];        % NACA airfoil
+            config.geometry.naca_digits = [0, 0, 1, 9];       % NACA airfoil
             config.geometry.chord_length = 2.3;               % Chord length
             config.geometry.angle_of_attack = -10;            % Angle of attack in degrees
             config.geometry.airfoil_x_center = -0.5;          % Airfoil center X-coordinate (leading edge, shifted left)
@@ -96,7 +96,7 @@ function config = config(geometry_type)
     config.simulation.reynolds_number = 100;
     config.simulation.viscosity = 1 / config.simulation.reynolds_number;
     config.simulation.time_step = 1e-2;
-    config.simulation.num_time_steps = 5000;
+    config.simulation.num_time_steps = 1000;
     config.simulation.num_time_steps_ci = 20;
     config.simulation.random_seed = 42;  % Required for DistMesh reproducibility (uses rand() for rejection method)
     config.simulation.show_progress = true;  % Display time step progress (disabled in CI)
