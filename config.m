@@ -9,9 +9,10 @@ function config = config(geometry_type)
     %   cfg = config('cylinder');          % Cylinder geometry
     %   cfg = config('ellipse');           % Ellipse geometry
     %   cfg = config('rectangle');         % Rectangle geometry
+    %   cfg = config('airfoil');           % NACA airfoil geometry
 
     if nargin < 1
-        geometry_type = 'rectangle';  % Default geometry
+        geometry_type = 'airfoil';  % Default geometry
     end
 
     %% Domain Configuration
@@ -48,8 +49,19 @@ function config = config(geometry_type)
             % Rectangle needs finer mesh for convergence
             config.mesh.dist = 0.05;
 
+        case 'airfoil'
+            % NACA 4-digit series parameters (simplified for mesh generation)
+            config.geometry.naca_digits = [0, 0, 1, 9]; % NACA 0018 - symmetric, thick airfoil
+            config.geometry.chord_length = 2.3;        % Airfoil chord length (increased for visibility)
+            config.geometry.angle_of_attack = -10;     % No angle of attack for simpler mesh
+            config.geometry.airfoil_x_center = -0.5;   % Airfoil center X-coordinate (leading edge, shifted left)
+            config.geometry.airfoil_y_center = 0.0;    % Airfoil center Y-coordinate
+            % Airfoil needs coarse mesh for initial testing
+            config.mesh.dist = 0.05;
+            config.mesh.refine_a1 = 0.02;             % Mesh refinement parameter A1 (near obstacle)
+            config.mesh.refine_b1 = 0.05;             % Mesh refinement parameter B1 (near obstacle)
         otherwise
-            error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle', geometry_type);
+            error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle, airfoil', geometry_type);
     end
 
     %% RBF-FD Algorithm Parameters
@@ -90,6 +102,11 @@ function config = config(geometry_type)
     config.simulation.num_time_steps_ci = 20;
     config.simulation.random_seed = 42;  % Required for DistMesh reproducibility (uses rand() for rejection method)
     config.simulation.show_progress = true;  % Display time step progress (disabled in CI)
+
+    % Geometry-specific time step adjustments for stability
+    if strcmp(lower(geometry_type), 'airfoil')
+        config.simulation.time_step = 5e-3;  % Smaller time step for airfoil stability
+    end
 
     %% Distance Thresholds for Special Treatment
     config.distances.x_min = 1;

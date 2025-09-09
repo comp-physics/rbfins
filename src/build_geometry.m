@@ -24,8 +24,15 @@ function G = build_geometry(cfg)
                     cfg.geometry.rect_width, cfg.geometry.rect_height, ...
                     cfg.geometry.rect_x_center, cfg.geometry.rect_y_center);
             G = make_rectangle_geometry(cfg);
+        case 'airfoil'
+            fprintf('Using NACA %d%d%d%d airfoil geometry (chord=%.2f, AoA=%.1f deg, center=[%.2f, %.2f])...\n', ...
+                    cfg.geometry.naca_digits(1), cfg.geometry.naca_digits(2), ...
+                    cfg.geometry.naca_digits(3), cfg.geometry.naca_digits(4), ...
+                    cfg.geometry.chord_length, cfg.geometry.angle_of_attack, ...
+                    cfg.geometry.airfoil_x_center, cfg.geometry.airfoil_y_center);
+            G = make_airfoil_geometry(cfg);
         otherwise
-            error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle', cfg.geometry.type);
+            error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle, airfoil', cfg.geometry.type);
     end
 
 end

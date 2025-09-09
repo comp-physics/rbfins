@@ -20,8 +20,14 @@ classdef BaseGeometryTest < matlab.unittest.TestCase
 
         function goldenFile = getGoldenFilePath(testCase)
             % Get the path to the golden reference file for this geometry
+            % Use geometry-specific time step for airfoil
+            if strcmp(testCase.GEOMETRY_TYPE, 'airfoil')
+                dt_str = '0.005';
+            else
+                dt_str = '0.01';
+            end
             goldenFile = fullfile(fileparts(mfilename('fullpath')), 'golden', ...
-                                  sprintf('%s_Re100_Nt20_dt0.01_seed42.mat', testCase.GEOMETRY_TYPE));
+                                  sprintf('%s_Re100_Nt20_dt%s_seed42.mat', testCase.GEOMETRY_TYPE, dt_str));
         end
 
     end
@@ -88,8 +94,8 @@ classdef BaseGeometryTest < matlab.unittest.TestCase
                     testCase.verifyTrue(isfield(cfg.geometry, field), ...
                                         sprintf('Config should have %s field', field));
 
-                    % Verify field is positive if it's a numeric dimension
-                    if contains(field, {'radius', 'width', 'height', '_a', '_b'})
+                    % Verify field is positive if it's a numeric dimension (exclude angle_of_attack)
+                    if ismember(field, {'obstacle_radius', 'rect_width', 'rect_height', 'ellipse_a', 'ellipse_b', 'chord_length'})
                         testCase.verifyTrue(cfg.geometry.(field) > 0, ...
                                             sprintf('%s should be positive', field));
                     end

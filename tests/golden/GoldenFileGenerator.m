@@ -10,7 +10,7 @@ classdef GoldenFileGenerator
             % Generate a golden file for the specified geometry
             %
             % Parameters:
-            %   geometryType   - String: 'cylinder', 'ellipse', or 'rectangle'
+            %   geometryType   - String: 'cylinder', 'ellipse', 'rectangle', or 'airfoil'
 
             fprintf('=== Creating %s Golden File ===\n', upper(geometryType));
 
@@ -78,6 +78,12 @@ classdef GoldenFileGenerator
                     meta.rect_height = cfg.geometry.rect_height;
                     meta.rect_x_center = cfg.geometry.rect_x_center;
                     meta.rect_y_center = cfg.geometry.rect_y_center;
+                case 'airfoil'
+                    meta.naca_digits = cfg.geometry.naca_digits;
+                    meta.chord_length = cfg.geometry.chord_length;
+                    meta.angle_of_attack = cfg.geometry.angle_of_attack;
+                    meta.airfoil_x_center = cfg.geometry.airfoil_x_center;
+                    meta.airfoil_y_center = cfg.geometry.airfoil_y_center;
             end
 
             meta.domain_size = [cfg.domain.x_min, cfg.domain.x_max, cfg.domain.y_min, cfg.domain.y_max];
@@ -116,7 +122,7 @@ classdef GoldenFileGenerator
             fprintf('=== GENERATING ALL GOLDEN FILES ===\n');
             setup_paths(); % Ensure paths are set for all calls
 
-            geometries = {'cylinder', 'ellipse', 'rectangle'};
+            geometries = {'cylinder', 'ellipse', 'rectangle', 'airfoil'};
 
             for i = 1:length(geometries)
                 try

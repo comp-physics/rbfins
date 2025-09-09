@@ -73,6 +73,13 @@ elseif isfield(G, 'rect_width') && isfield(G, 'rect_height')
     rect_width = G.rect_width;   % Rectangle width
     rect_height = G.rect_height; % Rectangle height
     obs_char_length = min(rect_width, rect_height) / 2; % Use half of smaller dimension
+elseif isfield(G, 'chord_length') && isfield(G, 'naca_digits')
+    chord_length = G.chord_length; % Airfoil chord length
+    naca_digits = G.naca_digits;   % NACA 4-digit parameters
+    % Calculate maximum thickness as characteristic length
+    thickness_percent = naca_digits(3) * 10 + naca_digits(4); % Thickness as percentage
+    max_thickness = (thickness_percent / 100) * chord_length;  % Maximum thickness in units
+    obs_char_length = max_thickness / 2; % Use half of maximum thickness
 else
     error('Geometry structure missing expected parameters');
 end
