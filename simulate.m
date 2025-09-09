@@ -202,4 +202,4 @@ end
 W0 = W(:, end);
 
 %% 11) Visualization of final results
-visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max);
+visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max, Dx, Dy);

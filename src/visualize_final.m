@@ -1,8 +1,7 @@
-function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max)
+function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max, Dx, Dy)
     %VISUALIZE_FINAL Create visualization of final simulation results
     %
-    % This function creates plots of the final velocity field if plotting is enabled.
-    % It shows both u-velocity perturbation (u-1) and v-velocity components.
+    % This function creates a plot of the final vorticity field if plotting is enabled.
     %
     % INPUTS:
     %   cfg    - Configuration structure
@@ -14,6 +13,8 @@ function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max)
     %   x_max  - Maximum x-coordinate of domain
     %   y_min  - Minimum y-coordinate of domain
     %   y_max  - Maximum y-coordinate of domain
+    %   Dx     - RBF-FD differentiation matrix for d/dx operator
+    %   Dy     - RBF-FD differentiation matrix for d/dy operator
 
     % Only plot if plotting is enabled
     if ~doPlot
@@ -24,8 +25,8 @@ function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max)
     x1 = xy1(:, 1); % x-coordinates of velocity nodes
     y1 = xy1(:, 2); % y-coordinates of velocity nodes
 
-    % Create figure for results
-    figure('Name', '1/Re = 1e-2');
+    % Create figure for vorticity visualization
+    figure('Name', 'Vorticity Field (1/Re = 1e-2)');
     colormap(jet);
 
     % Extract final time step velocity components
@@ -33,26 +34,13 @@ function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max)
     U = W(1:length(xy1), (j - 1) * 1 + 1); % Final u-velocity
     V = W(length(xy1) + 1:end, (j - 1) * 1 + 1); % Final v-velocity
 
-    % Plot u-velocity field (perturbation from uniform flow)
-    subplot(2, 1, 1);
-    % Plot u-1 to show deviation from uniform flow (u=1)
-    scatter(x1, y1, cfg.visualization.scatter_size * ones(length(xy1), 1), 1 * (U - 1), '.');
-    axis equal;
-    axis tight;
-    hold on;
-    xlim([x_min, x_max]);
-    ylim([y_min, y_max]);
-    yticks(cfg.visualization.plot_tick_y);
-    xticks(cfg.visualization.plot_tick_x);
-    title('u-velocity perturbation (u-1)');
-    ylabel('y');
-    xlabel('x');
-    shading interp;
-    clim([-cfg.visualization.color_axis_range, cfg.visualization.color_axis_range]);
+    % Compute vorticity: omega = dv/dx - du/dy
+    dvdx = Dx * V; % dv/dx using RBF-FD operator
+    dudy = Dy * U; % du/dy using RBF-FD operator
+    vorticity = dvdx - dudy; % Vorticity field
 
-    % Plot v-velocity field (should be zero in uniform flow)
-    subplot(2, 1, 2);
-    scatter(x1, y1, cfg.visualization.scatter_size * ones(length(xy1), 1), 1 * V, '.');
+    % Plot vorticity field
+    scatter(x1, y1, cfg.visualization.scatter_size * ones(length(xy1), 1), vorticity, '.');
     axis equal;
     axis tight;
     hold on;
@@ -62,12 +50,11 @@ function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max)
     ylim([y_min, y_max]);
     yticks(cfg.visualization.plot_tick_y);
     xticks(cfg.visualization.plot_tick_x);
-    title('v-velocity');
+    title('Vorticity (omega = dv/dx - du/dy)');
 
     xlabel('x');
     ylabel('y');
-    set(gca, 'Ytick', []); % Remove y-tick labels for cleaner appearance
-    clim([-cfg.visualization.color_axis_range, cfg.visualization.color_axis_range]);
+    colorbar; % Add colorbar for vorticity
 
     drawnow; % Update display immediately
 

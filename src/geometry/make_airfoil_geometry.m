@@ -45,7 +45,7 @@ function G = make_airfoil_geometry(cfg)
     % For wake refinement, use a line from trailing edge to domain outlet
     trailing_edge_x = airfoil_x_center + chord_length * cos(angle_of_attack * pi / 180);
     trailing_edge_y = airfoil_y_center + chord_length * sin(angle_of_attack * pi / 180);
-    
+
     fd1 = @(p) min(a1 + b1 * abs(dairfoil(p, airfoil_x_center, airfoil_y_center, naca_digits, chord_length, angle_of_attack)), ...
                    a2 + b2 * abs(dpoly(p, [trailing_edge_x, trailing_edge_y; x_max, trailing_edge_y])));
 
@@ -57,7 +57,7 @@ function G = make_airfoil_geometry(cfg)
     fprintf('Generating NACA %d%d%d%d airfoil mesh (chord=%.2f, AoA=%.1f deg)...\n', ...
             naca_digits(1), naca_digits(2), naca_digits(3), naca_digits(4), ...
             chord_length, angle_of_attack);
-    
+
     % Use standard DistMesh for airfoil geometry
     [xy_s, xt] = distmesh2d(fd, fd1, dist, [x_min, y_min; x_max, y_max], fix);
     fprintf('Airfoil mesh generation completed.\n');

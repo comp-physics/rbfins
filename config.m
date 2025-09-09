@@ -48,18 +48,16 @@ function config = config(geometry_type)
             config.geometry.rect_y_center = 0.0;      % Rectangle center Y-coordinate
             % Rectangle needs finer mesh for convergence
             config.mesh.dist = 0.05;
-
         case 'airfoil'
-            % NACA 4-digit series parameters (simplified for mesh generation)
-            config.geometry.naca_digits = [0, 0, 1, 9]; % NACA 0018 - symmetric, thick airfoil
-            config.geometry.chord_length = 2.3;        % Airfoil chord length (increased for visibility)
-            config.geometry.angle_of_attack = -10;     % No angle of attack for simpler mesh
-            config.geometry.airfoil_x_center = -0.5;   % Airfoil center X-coordinate (leading edge, shifted left)
-            config.geometry.airfoil_y_center = 0.0;    % Airfoil center Y-coordinate
-            % Airfoil needs coarse mesh for initial testing
-            config.mesh.dist = 0.05;
-            config.mesh.refine_a1 = 0.02;             % Mesh refinement parameter A1 (near obstacle)
-            config.mesh.refine_b1 = 0.05;             % Mesh refinement parameter B1 (near obstacle)
+            % NACA 4-digit series parameters
+            config.geometry.naca_digits = [0, 0, 1, 9];        % NACA airfoil
+            config.geometry.chord_length = 2.3;               % Chord length
+            config.geometry.angle_of_attack = -10;            % Angle of attack in degrees
+            config.geometry.airfoil_x_center = -0.5;          % Airfoil center X-coordinate (leading edge, shifted left)
+            config.geometry.airfoil_y_center = 0.0;           % Airfoil center Y-coordinate
+            config.mesh.dist = 0.05;                          % Need a somewhat finer mesh distribution
+            config.mesh.refine_a1 = 0.02;                     % Mesh refinement parameter A1 (near obstacle)
+            config.mesh.refine_b1 = 0.05;                     % Mesh refinement parameter B1 (near obstacle)
         otherwise
             error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle, airfoil', geometry_type);
     end

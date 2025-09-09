@@ -119,14 +119,9 @@ function dist = compute_airfoil_distance(x, y, m, p_camber, t)
 
     % Determine sign (inside/outside) using simple y-coordinate comparison
     % Point is inside if it's between upper and lower surfaces at this x-location
-    if y > yu
-        % Point is above upper surface - outside
-        dist = dist;
-    elseif y < yl
-        % Point is below lower surface - outside  
-        dist = dist;
-    else
-        % Point is between upper and lower surfaces - inside
+    if y >= yl && y <= yu
+        % Point is between upper and lower surfaces - inside airfoil
+        % If point is outside (y > yu or y < yl), dist remains positive
         dist = -dist;
     end
 end
