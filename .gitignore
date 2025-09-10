@@ -35,3 +35,12 @@ octave-workspace
 
 # Virtual environment
 venv/
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.svg
+*.eps

@@ -31,8 +31,11 @@ function G = build_geometry(cfg)
                     cfg.geometry.chord_length, cfg.geometry.angle_of_attack, ...
                     cfg.geometry.airfoil_x_center, cfg.geometry.airfoil_y_center);
             G = make_airfoil_geometry(cfg);
+        case 'multi'
+            fprintf('Using multi-obstacle geometry (%d obstacles)...\n', length(cfg.geometry.obstacles));
+            G = make_multi_geometry(cfg);
         otherwise
-            error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle, airfoil', cfg.geometry.type);
+            error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle, airfoil, multi', cfg.geometry.type);
     end
 
 end

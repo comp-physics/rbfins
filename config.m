@@ -10,9 +10,10 @@ function config = config(geometry_type)
     %   cfg = config('ellipse');           % Ellipse geometry
     %   cfg = config('rectangle');         % Rectangle geometry
     %   cfg = config('airfoil');           % NACA airfoil geometry
+    %   cfg = config('multi');             % Multiple obstacles geometry
 
     if nargin < 1
-        geometry_type = 'rectangle';  % Default geometry
+        geometry_type = 'multi';  % Default geometry
     end
 
     %% Domain Configuration
@@ -30,10 +31,21 @@ function config = config(geometry_type)
     config.mesh.refine_b2 = 0.08;             % Mesh refinement parameter B2 (wake region)
     config.mesh.edge_multiplier = 3;          % Multiplier for edge generation from triangles
 
-    %% Geometry Parameters - Set based on geometry type
-    config.geometry.type = lower(geometry_type);
+    %% Simulation Parameters (set defaults first, then override per geometry)
+    config.simulation.reynolds_number = 100;
+    config.simulation.viscosity = 1 / config.simulation.reynolds_number;
+    config.simulation.time_step = 1e-2;  % Default time step (may be overridden by geometry)
+    config.simulation.num_time_steps = 2000;
+    config.simulation.num_time_steps_ci = 20;
+    config.simulation.random_seed = 42;  % Required for DistMesh reproducibility (uses rand() for rejection method)
+    config.simulation.show_progress = true;  % Display time step progress (disabled in CI)
 
-    switch lower(geometry_type)
+    %% Geometry Parameters - Set based on geometry type
+    % Normalize geometry type to lowercase once
+    geometry_type_lower = lower(geometry_type);
+    config.geometry.type = geometry_type_lower;
+
+    switch geometry_type_lower
         case 'cylinder'
             config.geometry.obstacle_radius = 0.5;    % Cylinder radius
 
@@ -48,6 +60,7 @@ function config = config(geometry_type)
             config.geometry.rect_y_center = 0.0;      % Rectangle center Y-coordinate
             % Rectangle needs finer mesh for convergence
             config.mesh.dist = 0.05;
+
         case 'airfoil'
             % NACA 4-digit series parameters
             config.geometry.naca_digits = [0, 0, 1, 9];       % NACA airfoil
@@ -56,10 +69,19 @@ function config = config(geometry_type)
             config.geometry.airfoil_x_center = -0.5;          % Airfoil center X-coordinate (leading edge, shifted left)
             config.geometry.airfoil_y_center = 0.0;           % Airfoil center Y-coordinate
             config.mesh.dist = 0.05;                          % Need a somewhat finer mesh distribution
-            config.mesh.refine_a1 = 0.02;                     % Mesh refinement parameter A1 (near obstacle)
-            config.mesh.refine_b1 = 0.05;                     % Mesh refinement parameter B1 (near obstacle)
+            % Airfoil needs smaller time step for stability
+            config.simulation.time_step = 5e-3;
+
+        case 'multi'
+            % Multiple obstacles configuration
+            % Default: two cylinders side-by-side vertically
+            config.geometry.obstacles = [ ...
+                struct('type', 'cylinder', 'center', [0, 1.8], 'params', struct('radius', 0.5)), ...
+                struct('type', 'cylinder', 'center', [0, -1.8], 'params', struct('radius', 0.5)) ...
+            ];
+            config.simulation.time_step = 5e-3;
         otherwise
-            error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle, airfoil', geometry_type);
+            error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle, airfoil, multi', geometry_type);
     end
 
     %% RBF-FD Algorithm Parameters
@@ -92,21 +114,7 @@ function config = config(geometry_type)
     config.rbf.order_near_boundary = 17;
     config.rbf.poly_degree_near_boundary = 2;
 
-    %% Simulation Parameters
-    config.simulation.reynolds_number = 100;
-    config.simulation.viscosity = 1 / config.simulation.reynolds_number;
-    config.simulation.time_step = 1e-2;
-    config.simulation.num_time_steps = 1000;
-    config.simulation.num_time_steps_ci = 20;
-    config.simulation.random_seed = 42;  % Required for DistMesh reproducibility (uses rand() for rejection method)
-    config.simulation.show_progress = true;  % Display time step progress (disabled in CI)
-
-    % Geometry-specific time step adjustments for stability
-    if strcmp(lower(geometry_type), 'airfoil')
-        config.simulation.time_step = 5e-3;  % Smaller time step for airfoil stability
-    end
-
-    %% Distance Thresholds for Special Treatment
+    %% Boundary Distance Thresholds for Special Treatment
     config.distances.x_min = 1;
     config.distances.x_max = 1;
     config.distances.y_min = 0.5;

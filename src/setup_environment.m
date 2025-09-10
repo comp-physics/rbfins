@@ -26,7 +26,7 @@ function [doPlot, isCI, isTest, Nt] = setup_environment(cfg, scriptDir)
     doPlot = ~isCI && ~isTest;
 
     if ~doPlot
-        % Aggressively disable all graphics for tests
+        % Aggressively disable all graphics for tests/CI
         set(0, 'DefaultFigureVisible', 'off');
         fprintf('Plotting completely disabled for testing/CI\n');
     else
