@@ -80,7 +80,7 @@ function config = config(geometry_type)
                                          struct('type', 'cylinder', 'center', [0, -2.5], 'params', struct('radius', 0.5)) ...
                                         ];
 
-            config.mesh.dist = 0.05;                          % Need a somewhat finer mesh distribution
+            config.mesh.dist = 0.07;                          % Need a somewhat finer mesh distribution
             config.simulation.time_step = 5e-3;
 
         otherwise

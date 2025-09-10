@@ -82,8 +82,7 @@ function G = make_multi_geometry(cfg)
 
     %% Generate triangular mesh using robust DistMesh algorithm
     fprintf('Generating multi-obstacle mesh with iteration limits...\n');
-    [xy_s, xt] = distmesh2d(fd, fd1, dist, [x_min, y_min; x_max, y_max], fix);
-    % [xy_s, xt] = distmesh2d_robust(fd, fd1, dist, [x_min, y_min; x_max, y_max], fix);
+    [xy_s, xt] = distmesh2d_robust(fd, fd1, dist, [x_min, y_min; x_max, y_max], fix);
     fprintf('Multi-obstacle mesh generation completed.\n');
 
     %% Generate velocity grid nodes (V-grid) by adding edge midpoints
