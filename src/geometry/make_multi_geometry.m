@@ -73,7 +73,7 @@ function G = make_multi_geometry(cfg)
         % Create wake line for this obstacle
         wake_refinements{i} = @(p) a2 + b2 * abs(dpoly(p, [wake_start_x, wake_start_y; x_max, wake_start_y]));
     end
-    
+
     % Combine all refinements: obstacle + all individual wakes
     fd1 = @(p) compute_combined_refinement(p, fd_obs_union, wake_refinements, a1, b1);
 
@@ -171,7 +171,6 @@ function G = make_multi_geometry(cfg)
             num_obstacles, length(xy_s), length(xy));
 end
 
-
 function fd_obs_union = build_obstacles_union_sdf(obstacles)
     %BUILD_OBSTACLES_UNION_SDF Build union signed distance function for all obstacles
     %
@@ -203,7 +202,7 @@ function fd_obs_union = build_obstacles_union_sdf(obstacles)
                     % Rotated ellipse
                     theta_rad = params.theta_deg * pi / 180;
                     obstacle_sdfs{i} = @(p) dellipse(protate(pshift(p, -center(1), -center(2)), -theta_rad), ...
-                                                    0, 0, params.a, params.b);
+                                                     0, 0, params.a, params.b);
                 else
                     % Axis-aligned ellipse
                     obstacle_sdfs{i} = @(p) dellipse(pshift(p, -center(1), -center(2)), 0, 0, params.a, params.b);
@@ -217,11 +216,11 @@ function fd_obs_union = build_obstacles_union_sdf(obstacles)
                 end
                 corner_radius = min(params.width, params.height) * corner_radius_frac;
                 obstacle_sdfs{i} = @(p) drounded_rectangle(p, center(1), center(2), ...
-                                                          params.width, params.height, corner_radius);
+                                                           params.width, params.height, corner_radius);
 
             case 'airfoil'
                 obstacle_sdfs{i} = @(p) dairfoil(p, center(1), center(2), params.naca_digits, ...
-                                                params.chord_length, params.angle_of_attack);
+                                                 params.chord_length, params.angle_of_attack);
 
             otherwise
                 error('Unsupported obstacle type: %s', type);
@@ -364,7 +363,7 @@ function obs_ids = assign_obstacle_ids(boundary_pts, obstacles)
     obs_ids = zeros(num_pts, 1);
 
     if num_pts == 0
-        return;
+        return
     end
 
     % For each boundary point, find the closest obstacle
@@ -383,7 +382,7 @@ function obs_ids = assign_obstacle_ids(boundary_pts, obstacles)
                     if isfield(obs.params, 'theta_deg') && obs.params.theta_deg ~= 0
                         theta_rad = obs.params.theta_deg * pi / 180;
                         dist = abs(dellipse(protate(pshift(pt, -obs.center(1), -obs.center(2)), -theta_rad), ...
-                                           0, 0, obs.params.a, obs.params.b));
+                                            0, 0, obs.params.a, obs.params.b));
                     else
                         dist = abs(dellipse(pshift(pt, -obs.center(1), -obs.center(2)), 0, 0, obs.params.a, obs.params.b));
                     end
@@ -394,10 +393,10 @@ function obs_ids = assign_obstacle_ids(boundary_pts, obstacles)
                     end
                     corner_radius = min(obs.params.width, obs.params.height) * corner_radius_frac;
                     dist = abs(drounded_rectangle(pt, obs.center(1), obs.center(2), ...
-                                                 obs.params.width, obs.params.height, corner_radius));
+                                                  obs.params.width, obs.params.height, corner_radius));
                 case 'airfoil'
                     dist = abs(dairfoil(pt, obs.center(1), obs.center(2), obs.params.naca_digits, ...
-                                       obs.params.chord_length, obs.params.angle_of_attack));
+                                        obs.params.chord_length, obs.params.angle_of_attack));
                 otherwise
                     dist = inf;
             end
@@ -427,7 +426,7 @@ function normals = compute_obstacle_normals(fd_obs_union, boundary_pts, eps)
     normals = zeros(num_pts, 2);
 
     if num_pts == 0
-        return;
+        return
     end
 
     % Compute numerical gradient using finite differences (vectorized)
@@ -481,25 +480,25 @@ function refinement = compute_combined_refinement(p, fd_obs_union, wake_refineme
     %
     % OUTPUTS:
     %   refinement       - Combined refinement values [N x 1]
-    
+
     % Start with obstacle refinement
     obstacle_ref = a1 + b1 * abs(fd_obs_union(p));
-    
+
     % Evaluate all wake refinements
     num_wakes = length(wake_refinements);
     if num_wakes == 0
         refinement = obstacle_ref;
-        return;
+        return
     end
-    
+
     % Compute all wake refinements and take minimum with obstacle refinement
     all_refinements = zeros(size(p, 1), num_wakes + 1);
     all_refinements(:, 1) = obstacle_ref;
-    
+
     for i = 1:num_wakes
         all_refinements(:, i + 1) = wake_refinements{i}(p);
     end
-    
+
     % Take minimum across all refinement types (obstacle + all wakes)
     refinement = min(all_refinements, [], 2);
 end

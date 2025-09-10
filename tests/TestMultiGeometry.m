@@ -142,7 +142,7 @@ classdef TestMultiGeometry < BaseGeometryTest
 
                 % Verify normal vectors are finite
                 testCase.verifyTrue(all(isfinite(G.obs_normals_s(:))), ...
-                                     'Normal vectors should be finite');
+                                    'Normal vectors should be finite');
 
                 % Verify obstacle IDs
                 testCase.verifyEqual(length(G.boundary_obs_ids), size(G.boundary_obs_s, 1), ...
@@ -206,8 +206,10 @@ classdef TestMultiGeometry < BaseGeometryTest
 
                 % Verify domain boundary nodes are at expected locations
                 eps = cfg.mesh.boundary_eps;
-                x_min = cfg.domain.x_min; x_max = cfg.domain.x_max;
-                y_min = cfg.domain.y_min; y_max = cfg.domain.y_max;
+                x_min = cfg.domain.x_min;
+                x_max = cfg.domain.x_max;
+                y_min = cfg.domain.y_min;
+                y_max = cfg.domain.y_max;
 
                 % Check inlet nodes (left boundary)
                 if ~isempty(G.boundary_in_s)
@@ -250,11 +252,13 @@ classdef TestMultiGeometry < BaseGeometryTest
     end
 
     methods
-        function goldenFile = getGoldenFilePath(testCase)
+
+        function goldenFile = getGoldenFilePath(~)
             % Override to use multi-specific golden file path
             goldenFile = fullfile(fileparts(mfilename('fullpath')), 'golden', ...
                                   'multi_Re100_Nt20_dt0.01_seed42.mat');
         end
+
     end
 
 end

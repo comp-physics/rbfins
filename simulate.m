@@ -113,42 +113,42 @@ boundary = [boundary_y; boundary_out; boundary_in; boundary_obs];
 if doPlot && ~isCI && ~isTest
     fprintf('Creating mesh visualization...\n');
     fig = figure('Name', 'Multi-Obstacle Mesh', 'Position', [100, 100, 1000, 600]);
-    
+
     % Plot interior nodes (sample for performance if needed)
     if size(xy, 1) > 10000
         % Sample for very large meshes
         sample_rate = max(1, floor(size(xy, 1) / 8000));
         scatter(xy(1:sample_rate:end, 1), xy(1:sample_rate:end, 2), 4, 'k.', 'DisplayName', ...
-                sprintf('Interior nodes (sampled %d/%d)', length(1:sample_rate:size(xy,1)), size(xy,1)));
+                sprintf('Interior nodes (sampled %d/%d)', length(1:sample_rate:size(xy, 1)), size(xy, 1)));
     else
         % Show all interior nodes for reasonable mesh sizes
-        scatter(xy(:, 1), xy(:, 2), 3, 'k.', 'DisplayName', sprintf('Interior nodes (%d)', size(xy,1)));
+        scatter(xy(:, 1), xy(:, 2), 3, 'k.', 'DisplayName', sprintf('Interior nodes (%d)', size(xy, 1)));
     end
     hold on;
-    
+
     % Plot pressure grid interior nodes (lighter color)
     if size(xy_s, 1) > 5000
         % Sample pressure nodes for very large meshes
         p_sample_rate = max(1, floor(size(xy_s, 1) / 4000));
         scatter(xy_s(1:p_sample_rate:end, 1), xy_s(1:p_sample_rate:end, 2), 2, [0.7 0.7 0.7], '.', ...
-                'DisplayName', sprintf('Pressure nodes (sampled %d/%d)', length(1:p_sample_rate:size(xy_s,1)), size(xy_s,1)));
+                'DisplayName', sprintf('Pressure nodes (sampled %d/%d)', length(1:p_sample_rate:size(xy_s, 1)), size(xy_s, 1)));
     else
         scatter(xy_s(:, 1), xy_s(:, 2), 2, [0.7 0.7 0.7], '.', ...
-                'DisplayName', sprintf('Pressure nodes (%d)', size(xy_s,1)));
+                'DisplayName', sprintf('Pressure nodes (%d)', size(xy_s, 1)));
     end
-    
+
     % Plot boundary nodes with different colors and markers
     scatter(boundary_in(:, 1), boundary_in(:, 2), 25, 'b', 's', 'filled', 'DisplayName', sprintf('Inlet (%d)', length(boundary_in)));
     scatter(boundary_y(:, 1), boundary_y(:, 2), 25, 'r', '^', 'filled', 'DisplayName', sprintf('Walls (%d)', length(boundary_y)));
     scatter(boundary_out(:, 1), boundary_out(:, 2), 25, 'g', 'v', 'filled', 'DisplayName', sprintf('Outlet (%d)', length(boundary_out)));
-    
+
     % Color-code obstacle boundaries if multi-obstacle
     if isfield(G, 'boundary_obs_ids') && isfield(G, 'num_obstacles')
         colors = {[1 0 1], [0 1 1], [1 1 0], [0.8 0.4 0], [0.6 0.2 0.8], [0.2 0.8 0.2], [0.8 0.2 0.2]};
         for obs_id = 1:G.num_obstacles
             obs_mask = G.boundary_obs_ids == obs_id;
             if any(obs_mask)
-                color_idx = mod(obs_id-1, length(colors))+1;
+                color_idx = mod(obs_id - 1, length(colors)) + 1;
                 color = colors{color_idx};
                 scatter(G.boundary_obs_s(obs_mask, 1), G.boundary_obs_s(obs_mask, 2), ...
                         35, color, 'o', 'filled', 'LineWidth', 1, 'MarkerEdgeColor', 'k', ...
@@ -160,9 +160,10 @@ if doPlot && ~isCI && ~isTest
                 'LineWidth', 1, 'MarkerEdgeColor', 'k', ...
                 'DisplayName', sprintf('Obstacle (%d pts)', length(boundary_obs)));
     end
-    
-    axis equal; grid on;
-    
+
+    axis equal;
+    grid on;
+
     % Calculate total node counts
     total_v_nodes = size(xy, 1) + length(boundary_in) + length(boundary_y) + length(boundary_out) + length(boundary_obs);
     total_p_nodes = size(xy_s, 1) + length(G.boundary_y_s) + length(G.boundary_out_s) + length(G.boundary_in_s) + length(G.boundary_obs_s);
@@ -171,12 +172,13 @@ if doPlot && ~isCI && ~isTest
     else
         num_obstacles = 1; % Single obstacle case
     end
-    
+
     title(sprintf('Multi-Obstacle Mesh: %d obstacles, V-grid: %d nodes, P-grid: %d nodes', ...
                   num_obstacles, total_v_nodes, total_p_nodes));
-    xlabel('x'); ylabel('y');
+    xlabel('x');
+    ylabel('y');
     legend('Location', 'best', 'FontSize', 8);
-    
+
     % Save figure and display
     try
         saveas(fig, 'multi_obstacle_mesh.png');
@@ -184,7 +186,7 @@ if doPlot && ~isCI && ~isTest
     catch
         % Ignore save errors
     end
-    
+
     % Force figure to front and pause briefly to ensure visibility
     figure(fig);
     drawnow;
