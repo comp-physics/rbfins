@@ -68,18 +68,21 @@ function config = config(geometry_type)
             config.geometry.angle_of_attack = -10;            % Angle of attack in degrees
             config.geometry.airfoil_x_center = -0.5;          % Airfoil center X-coordinate (leading edge, shifted left)
             config.geometry.airfoil_y_center = 0.0;           % Airfoil center Y-coordinate
-            config.mesh.dist = 0.05;                          % Need a somewhat finer mesh distribution
-            % Airfoil needs smaller time step for stability
-            config.simulation.time_step = 5e-3;
+
+            config.mesh.dist = 0.075;                          % Need a somewhat finer mesh distribution
+            config.simulation.time_step = 5e-3;               % Airfoil needs smaller time step for stability
 
         case 'multi'
             % Multiple obstacles configuration
             % Default: two cylinders side-by-side vertically
             config.geometry.obstacles = [ ...
-                                         struct('type', 'cylinder', 'center', [0, 1.8], 'params', struct('radius', 0.5)), ...
-                                         struct('type', 'cylinder', 'center', [0, -1.8], 'params', struct('radius', 0.5)) ...
+                                         struct('type', 'cylinder', 'center', [0, 2.5], 'params', struct('radius', 0.5)), ...
+                                         struct('type', 'cylinder', 'center', [0, -2.5], 'params', struct('radius', 0.5)) ...
                                         ];
+
+            config.mesh.dist = 0.05;                          % Need a somewhat finer mesh distribution
             config.simulation.time_step = 5e-3;
+
         otherwise
             error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle, airfoil, multi', geometry_type);
     end
