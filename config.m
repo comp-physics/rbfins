@@ -13,7 +13,7 @@ function config = config(geometry_type)
     %   cfg = config('multi');             % Multiple obstacles geometry
 
     if nargin < 1
-        geometry_type = 'multi';  % Default geometry
+        geometry_type = 'cylinder';  % Default geometry
     end
 
     %% Domain Configuration
