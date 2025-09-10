@@ -18,8 +18,6 @@ echo "=========================="
 
 # Function to run MATLAB linting
 run_matlab_lint() {
-    echo -e "${YELLOW}Running MATLAB Code Analyzer...${NC}"
-    
     # Run the same lint function as CI
     if matlab -batch "addpath('.github/scripts'); lint" -nodesktop -nosplash -nojvm; then
         echo -e "${GREEN}[SUCCESS] MATLAB Code Analyzer passed!${NC}"
@@ -35,19 +33,19 @@ run_matlab_lint() {
 }
 
 # Main execution
-echo -e "${YELLOW}Running MATLAB Code Analyzer (same as CI lint job)...${NC}"
+echo -e "${YELLOW}Running MATLAB Code Analyzer (same as CI linter)...${NC}"
 
 # Run MATLAB linting
 if run_matlab_lint; then
     echo ""
     echo "=========================="
-    echo -e "${GREEN}[SUCCESS] MATLAB Code Analyzer passed! ✓${NC}"
+    echo -e "${GREEN}[SUCCESS] MATLAB Code Analyzer passed!${NC}"
     echo -e "${GREEN}Your code will pass the CI lint job.${NC}"
     exit 0
 else
     echo ""
     echo "=========================="
-    echo -e "${RED}[FAILED] MATLAB Code Analyzer found issues! ✗${NC}"
+    echo -e "${RED}[FAILED] MATLAB Code Analyzer found issues!${NC}"
     echo -e "${YELLOW}Please fix the issues above before committing.${NC}"
     echo ""
     echo -e "${BLUE}Additional checks:${NC}"
