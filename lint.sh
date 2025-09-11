@@ -32,24 +32,19 @@ run_matlab_lint() {
     fi
 }
 
-# Main execution
-echo -e "${YELLOW}Running MATLAB Code Analyzer (same as CI linter)...${NC}"
-
 # Run MATLAB linting
 if run_matlab_lint; then
     echo ""
-    echo "=========================="
     echo -e "${GREEN}[SUCCESS] MATLAB Code Analyzer passed!${NC}"
     echo -e "${GREEN}Your code will pass the CI lint job.${NC}"
     exit 0
 else
     echo ""
-    echo "=========================="
     echo -e "${RED}[FAILED] MATLAB Code Analyzer found issues!${NC}"
     echo -e "${YELLOW}Please fix the issues above before committing.${NC}"
     echo ""
     echo -e "${BLUE}Additional checks:${NC}"
-    echo -e "  • For style issues: ${YELLOW}./format.sh${NC} (check/fix formatting)"
-    echo -e "  • For auto-fixes: ${YELLOW}./fix.sh${NC} (attempt automatic fixes)"
+    echo -e "  * For style issues: ${YELLOW}./format.sh${NC} (check/fix formatting)"
+    echo -e "  * For auto-fixes: ${YELLOW}./fix.sh${NC} (attempt automatic fixes)"
     exit 1
 fi

@@ -1,4 +1,4 @@
-function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max, Dx, Dy)
+function visualize_final(cfg, doPlot, xy1, W, ~, x_min, x_max, y_min, y_max, Dx, Dy)
   %VISUALIZE_FINAL Create visualization of final simulation results
   %
   % This function creates a plot of the final vorticity field if plotting is enabled.
@@ -65,7 +65,7 @@ function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max, Dx
     color_limit = 1.0; % Default color range
     fprintf('Warning: Vorticity field is zero or contains NaN values. Using default color range.\n');
   end
-  caxis([-color_limit, color_limit]);
+  clim([-color_limit, color_limit]);
 
   xlim([x_min, x_max]);
   ylim([y_min, y_max]);
@@ -100,7 +100,7 @@ function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max, Dx
     u_color_limit = 1.0; % Default color range
     fprintf('Warning: U-velocity field is zero or contains NaN values. Using default color range.\n');
   end
-  caxis([-u_color_limit, u_color_limit]);
+  clim([-u_color_limit, u_color_limit]);
 
   xlim([x_min, x_max]);
   ylim([y_min, y_max]);
@@ -140,7 +140,7 @@ function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max, Dx
     v_color_limit = 1.0; % Default color range
     fprintf('Warning: V-velocity field is zero or contains NaN values. Using default color range.\n');
   end
-  caxis([-v_color_limit, v_color_limit]);
+  clim([-v_color_limit, v_color_limit]);
 
   xlim([x_min, x_max]);
   ylim([y_min, y_max]);
@@ -180,7 +180,7 @@ function visualize_final(cfg, doPlot, xy1, W, Nt, x_min, x_max, y_min, y_max, Dx
     mag_max = 1.0; % Default color range
     fprintf('Warning: Velocity magnitude is zero or contains NaN values. Using default color range.\n');
   end
-  caxis([0, mag_max]);
+  clim([0, mag_max]);
 
   xlim([x_min, x_max]);
   ylim([y_min, y_max]);

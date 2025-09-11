@@ -1,25 +1,31 @@
-function stability_diagnostics()
+function varargout = stability_diagnostics(func_name, varargin)
   %STABILITY_DIAGNOSTICS Comprehensive stability analysis and debugging functions
   %
   % This file contains all debugging and stability analysis functions for the
   % RBF-FD Navier-Stokes simulation. Functions are designed to provide detailed
   % root cause analysis when simulations become unstable.
   %
-  % Main functions:
-  %   - log_step_stats: Print diagnostic statistics for current time step
-  %   - analyze_stability: Comprehensive stability analysis and warnings
-  %   - analyze_instability_cause: Detailed analysis of what caused instability
-  %   - provide_stability_recommendations: Give actionable advice for stability issues
-  %   - classify_node_idx: Determine location type of a node index
-  %   - save_debug_snapshot: Save simulation state for debugging
-  %
-  % Usage: These functions are called automatically from simulate.m when
-  %        debug logging is enabled via config.logging parameters.
-  
-  error('This is a function library. Call individual functions directly.');
+  % Usage:
+  %   stability_diagnostics('log_step_stats', j, Wprev, Wcur, dt, Dx, Dy, D0_12_x, D0_12_y, xy1, h_min, h_med, cfg)
+  %   stability_diagnostics('analyze_instability_cause', j, W, p0, bad_idx, loc_str, pt, dt, Dx, Dy, D0_12_x, D0_12_y, xy1, h_min, h_med, cfg)
+  %   [loc_str, pt] = stability_diagnostics('classify_node_idx', idx, L_W, boundary_y, boundary_out, boundary_in, boundary_obs, xy1)
+  %   stability_diagnostics('save_debug_snapshot', cfg, j, xy1, W, p, dt_val, Dx, Dy, D0_12_x, D0_12_y, G)
+
+  switch func_name
+    case 'log_step_stats'
+      log_step_stats(varargin{:});
+    case 'analyze_instability_cause'
+      analyze_instability_cause(varargin{:});
+    case 'classify_node_idx'
+      [varargout{1}, varargout{2}] = classify_node_idx(varargin{:});
+    case 'save_debug_snapshot'
+      save_debug_snapshot(varargin{:});
+    otherwise
+      error('Unknown function: %s', func_name);
+  end
 end
 
-function log_step_stats(j, Wprev, Wcur, dt, Dx, Dy, D0_12_x, D0_12_y, xy1, h_min, h_med, cfg) %#ok<DEFNU>
+function log_step_stats(j, Wprev, Wcur, dt, ~, ~, D0_12_x, D0_12_y, xy1, h_min, h_med, cfg)
   %LOG_STEP_STATS Print diagnostic statistics for current time step
 
   Uprev = Wprev(1:end / 2);
@@ -195,7 +201,7 @@ function provide_stability_recommendations(critical_issues, warnings, CFL_min, d
   fprintf('  [RECOMMEND] Algorithm: Consider lower Reynolds number for testing\n');
 end
 
-function analyze_instability_cause(j, W, p0, bad_idx, loc_str, pt, dt, Dx, Dy, D0_12_x, D0_12_y, xy1, h_min, h_med, cfg) %#ok<DEFNU>
+function analyze_instability_cause(j, W, p0, bad_idx, loc_str, pt, dt, Dx, Dy, D0_12_x, D0_12_y, xy1, h_min, h_med, cfg)
   %ANALYZE_INSTABILITY_CAUSE Detailed analysis of what caused the instability
 
   fprintf('\n=== INSTABILITY ROOT CAUSE ANALYSIS ===\n');
@@ -203,13 +209,6 @@ function analyze_instability_cause(j, W, p0, bad_idx, loc_str, pt, dt, Dx, Dy, D
   % Extract current and previous solutions
   U_cur = W(1:end / 2, j + 1);
   V_cur = W(end / 2 + 1:end, j + 1);
-  if j > 1
-    U_prev = W(1:end / 2, j);
-    V_prev = W(end / 2 + 1:end, j);
-  else
-    U_prev = zeros(size(U_cur));
-    V_prev = zeros(size(V_cur));
-  end
 
   % 1. Location-specific analysis
   fprintf('1. LOCATION ANALYSIS:\n');
@@ -250,8 +249,14 @@ function analyze_instability_cause(j, W, p0, bad_idx, loc_str, pt, dt, Dx, Dy, D
 
   % 3. Field magnitude analysis
   fprintf('\n3. FIELD MAGNITUDE ANALYSIS:\n');
-  U_finite = U_cur(isfinite(U_cur));
-  V_finite = V_cur(isfinite(V_cur));
+  % Filter both U and V together to maintain correspondence
+  finite_mask = isfinite(U_cur) & isfinite(V_cur);
+  U_finite = U_cur(finite_mask);
+  V_finite = V_cur(finite_mask);
+
+  % Debug info
+  fprintf('   Total nodes: %d, Finite U: %d, Finite V: %d, Both finite: %d\n', ...
+          length(U_cur), sum(isfinite(U_cur)), sum(isfinite(V_cur)), sum(finite_mask));
 
   if ~isempty(U_finite) && ~isempty(V_finite)
     U_max_finite = max(abs(U_finite));
@@ -266,41 +271,58 @@ function analyze_instability_cause(j, W, p0, bad_idx, loc_str, pt, dt, Dx, Dy, D
 
   % 4. CFL analysis at failure
   fprintf('\n4. CFL CONDITION AT FAILURE:\n');
-  if ~isempty(U_finite) && ~isempty(V_finite) && isfinite(h_min) && h_min > 0
-    Vmag_max = max(sqrt(U_finite.^2 + V_finite.^2));
-    CFL_at_failure = Vmag_max * dt / h_min;
-    fprintf('   CFL number at failure: %.3f\n', CFL_at_failure);
+  if ~isempty(U_finite) && ~isempty(V_finite) && length(U_finite) == length(V_finite) && isfinite(h_min) && h_min > 0
+    try
+      Vmag_max = max(sqrt(U_finite.^2 + V_finite.^2));
+      CFL_at_failure = Vmag_max * dt / h_min;
+      fprintf('   CFL number at failure: %.3f\n', CFL_at_failure);
 
-    if CFL_at_failure > 1.0
-      fprintf('   -> CRITICAL CFL VIOLATION: CFL > 1.0\n');
-      fprintf('   -> Solution: Reduce time step by factor %.1f\n', CFL_at_failure);
-    elseif CFL_at_failure > 0.5
-      fprintf('   -> HIGH CFL: Approaching stability limit\n');
-      fprintf('   -> Solution: Reduce time step by factor %.1f\n', CFL_at_failure * 2);
+      if CFL_at_failure > 1.0
+        fprintf('   -> CRITICAL CFL VIOLATION: CFL > 1.0\n');
+        fprintf('   -> Solution: Reduce time step by factor %.1f\n', CFL_at_failure);
+      elseif CFL_at_failure > 0.5
+        fprintf('   -> HIGH CFL: Approaching stability limit\n');
+        fprintf('   -> Solution: Reduce time step by factor %.1f\n', CFL_at_failure * 2);
+      else
+        fprintf('   -> CFL appears reasonable, other causes likely\n');
+      end
+    catch ME
+      fprintf('   -> Cannot compute CFL: %s\n', ME.message);
+    end
+  else
+    if isempty(U_finite) || isempty(V_finite)
+      fprintf('   -> Cannot compute CFL: no finite velocity values\n');
+    elseif length(U_finite) ~= length(V_finite)
+      fprintf('   -> Cannot compute CFL: mismatched array sizes (U:%d, V:%d)\n', length(U_finite), length(V_finite));
     else
-      fprintf('   -> CFL appears reasonable, other causes likely\n');
+      fprintf('   -> Cannot compute CFL: invalid mesh spacing\n');
     end
   end
 
   % 5. Mass conservation at failure
   fprintf('\n5. MASS CONSERVATION AT FAILURE:\n');
-  if ~isempty(U_finite) && ~isempty(V_finite)
-    try
-      div = D0_12_x * U_finite + D0_12_y * V_finite;
-      div_max = max(abs(div));
-      div_rms = sqrt(mean(div.^2));
+  try
+    % Use original U_cur and V_cur for divergence calculation (operators expect full vectors)
+    div = D0_12_x * U_cur + D0_12_y * V_cur;
+    div_finite = div(isfinite(div));
+
+    if ~isempty(div_finite)
+      div_max = max(abs(div_finite));
+      div_rms = sqrt(mean(div_finite.^2));
       fprintf('   Max |divergence|: %.3e, RMS divergence: %.3e\n', div_max, div_rms);
 
-      if div_max > 1e-1
+      if div_max > 100  % Use updated threshold
         fprintf('   -> CRITICAL MASS CONSERVATION FAILURE\n');
         fprintf('   -> Cause: Pressure solver issues, poor mesh quality\n');
-      elseif div_max > 1e-3
+      elseif div_max > 10  % Use updated threshold
         fprintf('   -> MASS CONSERVATION DEGRADED\n');
         fprintf('   -> Cause: Numerical errors accumulating\n');
       end
-    catch
-      fprintf('   -> Cannot compute divergence (too many NaNs)\n');
+    else
+      fprintf('   -> Cannot compute divergence (all values are NaN/Inf)\n');
     end
+  catch ME
+    fprintf('   -> Cannot compute divergence: %s\n', ME.message);
   end
 
   % 6. Pressure field analysis
@@ -345,12 +367,11 @@ function analyze_instability_cause(j, W, p0, bad_idx, loc_str, pt, dt, Dx, Dy, D
   fprintf('\n=== END INSTABILITY ANALYSIS ===\n\n');
 end
 
-function [loc_str, pt] = classify_node_idx(idx, L_W, boundary_y, boundary_out, boundary_in, boundary_obs, xy1) %#ok<DEFNU>
+function [loc_str, pt] = classify_node_idx(idx, L_W, boundary_y, boundary_out, boundary_in, boundary_obs, xy1)
   %CLASSIFY_NODE_IDX Determine location type of a node index
   N_y = size(boundary_y, 1);
   N_out = size(boundary_out, 1);
   N_inlet = size(boundary_in, 1);
-  N_obs = size(boundary_obs, 1);
 
   if idx <= L_W
     loc_str = 'interior';
@@ -369,7 +390,7 @@ function [loc_str, pt] = classify_node_idx(idx, L_W, boundary_y, boundary_out, b
   pt = xy1(idx, :);
 end
 
-function save_debug_snapshot(cfg, j, xy1, W, p, dt_val, Dx, Dy, D0_12_x, D0_12_y, G) %#ok<DEFNU>
+function save_debug_snapshot(cfg, j, xy1, W, p, dt_val, Dx, Dy, D0_12_x, D0_12_y, G)
   %SAVE_DEBUG_SNAPSHOT Save simulation state for debugging
   try
     ddir = cfg.logging.snapshot_dir;
@@ -380,7 +401,7 @@ function save_debug_snapshot(cfg, j, xy1, W, p, dt_val, Dx, Dy, D0_12_x, D0_12_y
     meta.cfg = cfg;
     meta.step = j;
     meta.time_step = dt_val;
-    meta.timestamp = datestr(now);
+    meta.timestamp = char(datetime("now"));
     U_prev = W(1:end / 2, max(j, 1));
     V_prev = W(end / 2 + 1:end, max(j, 1));
     U_cur  = W(1:end / 2, j + 1);

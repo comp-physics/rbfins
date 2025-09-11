@@ -20,8 +20,8 @@ classdef BaseGeometryTest < matlab.unittest.TestCase
 
     function goldenFile = getGoldenFilePath(testCase)
       % Get the path to the golden reference file for this geometry
-      % Use geometry-specific time step for airfoil
-      if strcmp(testCase.GEOMETRY_TYPE, 'airfoil')
+      % Use geometry-specific time step for airfoil and multi-obstacle
+      if strcmp(testCase.GEOMETRY_TYPE, 'airfoil') || strcmp(testCase.GEOMETRY_TYPE, 'multi')
         dt_str = '0.005';
       else
         dt_str = '0.01';

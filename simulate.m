@@ -32,9 +32,6 @@ else
   cfg = config(geometry_type);
 end
 
-% Make config globally accessible for diagnostic functions
-global cfg
-
 %% 1) Setup environment and dependencies
 [doPlot, isCI, isTest, Nt] = setup_environment(cfg, scriptDir);
 
@@ -263,7 +260,7 @@ if cfg.logging.enable
       fprintf('[diag] spacing: h_min=%.3g, h_med=%.3g (V-grid interior)\n', h_min, h_med);
     end
   catch ME
-    warning('spacing precomp failed: %s', ME.message);
+    warning('%s', ['spacing precomp failed: ' ME.message]);
   end
 end
 
@@ -304,34 +301,34 @@ for j = 1:Nt
                                                     L0, L_B, L_B_obs, L_W, L_B_y, ...
                                                     length(boundary_s), D0_12_x, D0_12_y, ...
                                                     D0_21_x, D0_21_y, Dy_b, Dy_b_1, ...
-                                                    D0_21_x_obs, D0_21_y_obs, p0, W(:, 1));
+                                                    D0_21_x_obs, D0_21_y_obs, p0, W(:, 1), cfg);
     end
   catch ME
     warning('Step %d threw error: %s', j, ME.message);
     if cfg.logging.snapshot_on_nan
-      save_debug_snapshot(cfg, j, xy1, W, p0, dt, Dx, Dy, D0_12_x, D0_12_y, G);
+      stability_diagnostics('save_debug_snapshot', cfg, j, xy1, W, p0, dt, Dx, Dy, D0_12_x, D0_12_y, G);
     end
     rethrow(ME);
   end
 
   % Diagnostics every N steps
   if cfg.logging.enable && (mod(j, cfg.logging.step_frequency) == 0 || j <= 3)
-    log_step_stats(j, W(:, j), W(:, j + 1), dt, Dx, Dy, D0_12_x, D0_12_y, xy1, h_min, h_med, cfg);
+    stability_diagnostics('log_step_stats', j, W(:, j), W(:, j + 1), dt, Dx, Dy, D0_12_x, D0_12_y, xy1, h_min, h_med, cfg);
   end
 
   % Instability detection and snapshot
   if any(~isfinite(W(:, j + 1)))
     bad_idx = find(~isfinite(W(:, j + 1)), 1, 'first');
-    [loc_str, pt] = classify_node_idx(bad_idx, L_W, boundary_y, boundary_out, boundary_in, boundary_obs, xy1);
+    [loc_str, pt] = stability_diagnostics('classify_node_idx', bad_idx, L_W, boundary_y, boundary_out, boundary_in, boundary_obs, xy1);
 
     fprintf('\n*** SIMULATION INSTABILITY DETECTED ***\n');
     fprintf('Step: %d, Index: %d, Location: %s at (%.3g, %.3g)\n', j, bad_idx, loc_str, pt(1), pt(2));
 
     % Perform detailed instability analysis
-    analyze_instability_cause(j, W, p0, bad_idx, loc_str, pt, dt, Dx, Dy, D0_12_x, D0_12_y, xy1, h_min, h_med, cfg);
+    stability_diagnostics('analyze_instability_cause', j, W, p0, bad_idx, loc_str, pt, dt, Dx, Dy, D0_12_x, D0_12_y, xy1, h_min, h_med, cfg);
 
     if cfg.logging.snapshot_on_nan
-      save_debug_snapshot(cfg, j, xy1, W, p0, dt, Dx, Dy, D0_12_x, D0_12_y, G);
+      stability_diagnostics('save_debug_snapshot', cfg, j, xy1, W, p0, dt, Dx, Dy, D0_12_x, D0_12_y, G);
     end
     break
   end

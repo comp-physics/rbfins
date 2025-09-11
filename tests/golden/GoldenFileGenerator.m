@@ -84,6 +84,19 @@ classdef GoldenFileGenerator
           meta.angle_of_attack = cfg.geometry.angle_of_attack;
           meta.airfoil_x_center = cfg.geometry.airfoil_x_center;
           meta.airfoil_y_center = cfg.geometry.airfoil_y_center;
+        case 'multi'
+          meta.num_obstacles = length(cfg.geometry.obstacles);
+          for i = 1:meta.num_obstacles
+            obs = cfg.geometry.obstacles(i);
+            meta.(sprintf('obstacle_%d_type', i)) = obs.type;
+            meta.(sprintf('obstacle_%d_center', i)) = obs.center;
+            if strcmp(obs.type, 'cylinder')
+              meta.(sprintf('obstacle_%d_radius', i)) = obs.params.radius;
+            elseif strcmp(obs.type, 'ellipse')
+              meta.(sprintf('obstacle_%d_a', i)) = obs.params.a;
+              meta.(sprintf('obstacle_%d_b', i)) = obs.params.b;
+            end
+          end
       end
 
       meta.domain_size = [cfg.domain.x_min, cfg.domain.x_max, cfg.domain.y_min, cfg.domain.y_max];
@@ -122,7 +135,7 @@ classdef GoldenFileGenerator
       fprintf('=== GENERATING ALL GOLDEN FILES ===\n');
       setup_paths(); % Ensure paths are set for all calls
 
-      geometries = {'cylinder', 'ellipse', 'rectangle', 'airfoil'};
+      geometries = {'cylinder', 'ellipse', 'rectangle', 'airfoil', 'multi'};
 
       for i = 1:length(geometries)
         try

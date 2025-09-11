@@ -13,9 +13,9 @@ classdef TestGoldenMulti < BaseGeometryTest
   methods
 
     function goldenFile = getGoldenFilePath(~)
-      % Override to use multi-specific golden file path
+      % Override to use multi-specific golden file path with correct time step
       goldenFile = fullfile(fileparts(mfilename('fullpath')), 'golden', ...
-                            'multi_Re100_Nt20_dt0.01_seed42.mat');
+                            'multi_Re100_Nt20_dt0.005_seed42.mat');
     end
 
   end

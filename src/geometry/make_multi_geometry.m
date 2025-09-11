@@ -96,7 +96,7 @@ function G = make_multi_geometry(cfg)
   % Use larger tolerance for velocity grid obstacle boundaries since edge midpoints
   % are typically further from obstacle surfaces than pressure grid nodes
   eps_v = eps * 2.5; % Increased tolerance for velocity grid obstacle boundaries
-  [boundary_in, boundary_y, boundary_out, boundary_obs, xy, obs_ids] = ...
+  [boundary_in, boundary_y, boundary_out, boundary_obs, xy, ~] = ...
       classify_velocity_boundaries(xy, x_min, x_max, y_min, y_max, fd_obs_union, obstacles, eps_v);
 
   %% Compute unit normal vectors at obstacle boundary nodes (pressure grid)

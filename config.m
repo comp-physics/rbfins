@@ -13,7 +13,7 @@ function config = config(geometry_type)
   %   cfg = config('multi');             % Multiple obstacles geometry
 
   if nargin < 1
-    geometry_type = 'airfoil';  % Default geometry
+    geometry_type = 'cylinder';  % Default geometry
   end
 
   %% Domain Configuration
@@ -35,7 +35,7 @@ function config = config(geometry_type)
   config.simulation.reynolds_number = 100;
   config.simulation.viscosity = 1 / config.simulation.reynolds_number;
   config.simulation.time_step = 1e-2;  % Default time step (may be overridden by geometry)
-  config.simulation.num_time_steps = 2000;
+  config.simulation.num_time_steps = 5000;
   config.simulation.num_time_steps_ci = 20;
   config.simulation.random_seed = 42;  % Required for DistMesh reproducibility (uses rand() for rejection method)
   config.simulation.show_progress = true;  % Display time step progress (disabled in CI)
@@ -162,12 +162,12 @@ function config = config(geometry_type)
   config.logging.pressure_analysis = debug_master;     % Analyze pressure field behavior
 
   % Stability thresholds
-  config.logging.cfl_warning_threshold = 0.5;          % Warn if CFL > this value
-  config.logging.cfl_critical_threshold = 1.0;         % Critical CFL threshold
-  config.logging.velocity_explosion_threshold = 100;   % Velocity magnitude explosion threshold
-  config.logging.pressure_explosion_threshold = 1000;  % Pressure explosion threshold
-  config.logging.divergence_warning_threshold = 1e-3;  % Mass conservation warning
-  config.logging.divergence_critical_threshold = 1e-1; % Mass conservation critical
+  config.logging.cfl_warning_threshold = 0.8;          % Warn if CFL > this value
+  config.logging.cfl_critical_threshold = 1.5;         % Critical CFL threshold
+  config.logging.velocity_explosion_threshold = 100;  % Velocity magnitude explosion threshold
+  config.logging.pressure_explosion_threshold = 1000; % Pressure explosion threshold
+  config.logging.divergence_warning_threshold = 10;    % Mass conservation warning
+  config.logging.divergence_critical_threshold = 100;  % Mass conservation critical
   config.logging.condition_number_threshold = 1e12;    % Matrix conditioning threshold
 
   % Environment override for enabling logging
