@@ -49,7 +49,7 @@ jobs:
           
           # Run MISS_HIT and capture output (allow non-zero exit codes)
           set +e
-          output=$(mh_style --line_length 140 src/ tests/ config.m simulate.m --brief 2>&1)
+          output=$(mh_style src/ tests/ config.m simulate.m --brief 2>&1)
           exit_code=$?
           set -e
           
@@ -61,7 +61,7 @@ jobs:
             echo "[ERROR] MATLAB formatting issues found!"
             echo ""
             echo "[REPORT] Detailed formatting report:"
-            mh_style --line_length 140 src/ tests/ config.m simulate.m || true
+            mh_style src/ tests/ config.m simulate.m || true
             echo ""
             echo "[FIX] To fix locally, run: ./format.sh"
             echo "[INFO] This will automatically fix most formatting issues"

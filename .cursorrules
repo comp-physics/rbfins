@@ -70,8 +70,8 @@ function [D_all] = RBF_PHS_FD_all(xy1, xy_s, Nearest_Idx, k, m, d)
 - **No hardcoded parameters**: All numerical values should be configurable
 
 ### 4. Code Formatting (MISS_HIT Standards)
-- **Line length**: Maximum 140 characters
-- **Indentation**: 4 spaces, no tabs
+- **Line length**: Maximum 160 characters
+- **Indentation**: 2 spaces, no tabs
 - **Operator spacing**: Spaces around operators (`a + b`, not `a+b`)
 - **Function calls**: Break long parameter lists across lines with proper alignment
 - **Comments**: Use `%` for single-line, `%%` for section headers
@@ -94,7 +94,7 @@ result = (a + b) * c / d;
 ```matlab
 % Input validation example
 if size(xy1, 2) ~= 2
-    error('xy1 must be an [N x 2] coordinate array');
+  error('xy1 must be an [N x 2] coordinate array');
 end
 
 % CI detection pattern
@@ -179,7 +179,7 @@ end
 
 ### 1. Code Quality Tools
 - **Linting**: Use MATLAB Code Analyzer with project-specific ignore list
-- **Formatting**: Use MISS_HIT (mh_style) with 140-character line limit
+- **Formatting**: Use MISS_HIT (mh_style) with 160-character line limit
 - **Local formatting**: Run `./format.sh` before commits
 - **CI validation**: Automatic linting and formatting checks on PRs
 
