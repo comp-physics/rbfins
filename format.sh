@@ -56,11 +56,11 @@ echo "Formatting MATLAB files..."
 
 # Apply automatic fixes
 echo -e "${YELLOW}Applying automatic fixes...${NC}"
-mh_style --line_length 140 --fix src/ tests/ config.m simulate.m --brief
+mh_style --fix src/ tests/ config.m simulate.m --brief
 
 # Check final status
 echo -e "${YELLOW}Final formatting check...${NC}"
-if mh_style --line_length 140 src/ tests/ config.m simulate.m --brief; then
+if mh_style src/ tests/ config.m simulate.m --brief; then
     echo -e "${GREEN}[SUCCESS] All files are properly formatted!${NC}"
 else
     echo -e "${YELLOW}[WARNING] Some style issues remain (may require manual fixing)${NC}"

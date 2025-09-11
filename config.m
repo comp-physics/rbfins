@@ -1,126 +1,192 @@
 function config = config(geometry_type)
-    % CONFIG - Configuration parameters for RBF Incompressible Navier-Stokes simulation
-    %
-    % This function returns a structure containing all configuration parameters
-    % for flow simulations with different obstacle geometries.
-    %
-    % Usage:
-    %   cfg = config();                    % Default geometry (cylinder)
-    %   cfg = config('cylinder');          % Cylinder geometry
-    %   cfg = config('ellipse');           % Ellipse geometry
-    %   cfg = config('rectangle');         % Rectangle geometry
-    %   cfg = config('airfoil');           % NACA airfoil geometry
+  % CONFIG - Configuration parameters for RBF Incompressible Navier-Stokes simulation
+  %
+  % This function returns a structure containing all configuration parameters
+  % for flow simulations with different obstacle geometries.
+  %
+  % Usage:
+  %   cfg = config();                    % Default geometry (cylinder)
+  %   cfg = config('cylinder');          % Cylinder geometry
+  %   cfg = config('ellipse');           % Ellipse geometry
+  %   cfg = config('rectangle');         % Rectangle geometry
+  %   cfg = config('airfoil');           % NACA airfoil geometry
+  %   cfg = config('multi');             % Multiple obstacles geometry
 
-    if nargin < 1
-        geometry_type = 'rectangle';  % Default geometry
-    end
+  if nargin < 1
+    geometry_type = 'cylinder';  % Default geometry
+  end
 
-    %% Domain Configuration
-    config.domain.x_min = -8;
-    config.domain.x_max = 24;
-    config.domain.y_min = -8;
-    config.domain.y_max = 8;
+  %% Domain Configuration
+  config.domain.x_min = -8;
+  config.domain.x_max = 24;
+  config.domain.y_min = -8;
+  config.domain.y_max = 8;
 
-    %% Mesh Generation Parameters
-    config.mesh.dist = 0.1;                   % Mesh spacing (adjusted per geometry below)
-    config.mesh.boundary_eps = 0.002;         % Boundary tolerance
-    config.mesh.refine_a1 = 0.05;             % Mesh refinement parameter A1 (near obstacle)
-    config.mesh.refine_b1 = 0.08;             % Mesh refinement parameter B1 (near obstacle)
-    config.mesh.refine_a2 = 0.05;             % Mesh refinement parameter A2 (wake region)
-    config.mesh.refine_b2 = 0.08;             % Mesh refinement parameter B2 (wake region)
-    config.mesh.edge_multiplier = 3;          % Multiplier for edge generation from triangles
+  %% Mesh Generation Parameters
+  config.mesh.dist = 0.1;                   % Mesh spacing (adjusted per geometry below)
+  config.mesh.boundary_eps = 0.002;         % Boundary tolerance
+  config.mesh.refine_a1 = 0.05;             % Mesh refinement parameter A1 (near obstacle)
+  config.mesh.refine_b1 = 0.08;             % Mesh refinement parameter B1 (near obstacle)
+  config.mesh.refine_a2 = 0.05;             % Mesh refinement parameter A2 (wake region)
+  config.mesh.refine_b2 = 0.08;             % Mesh refinement parameter B2 (wake region)
+  config.mesh.edge_multiplier = 3;          % Multiplier for edge generation from triangles
 
-    %% Geometry Parameters - Set based on geometry type
-    config.geometry.type = lower(geometry_type);
+  %% Simulation Parameters (set defaults first, then override per geometry)
+  config.simulation.reynolds_number = 100;
+  config.simulation.viscosity = 1 / config.simulation.reynolds_number;
+  config.simulation.time_step = 1e-2;  % Default time step (may be overridden by geometry)
+  config.simulation.num_time_steps = 5000;
+  config.simulation.num_time_steps_ci = 20;
+  config.simulation.random_seed = 42;  % Required for DistMesh reproducibility (uses rand() for rejection method)
+  config.simulation.show_progress = true;  % Display time step progress (disabled in CI)
 
-    switch lower(geometry_type)
-        case 'cylinder'
-            config.geometry.obstacle_radius = 0.5;    % Cylinder radius
+  %% Geometry Parameters - Set based on geometry type
+  % Normalize geometry type to lowercase once
+  geometry_type_lower = lower(geometry_type);
+  config.geometry.type = geometry_type_lower;
 
-        case 'ellipse'
-            config.geometry.ellipse_a = 0.5;          % Ellipse semi-major axis (x-direction)
-            config.geometry.ellipse_b = 0.4;          % Ellipse semi-minor axis (y-direction)
+  switch geometry_type_lower
+    case 'cylinder'
+      config.geometry.obstacle_radius = 0.5;    % Cylinder radius
 
-        case 'rectangle'
-            config.geometry.rect_width = 1.0;         % Rectangle width (x-direction)
-            config.geometry.rect_height = 0.8;        % Rectangle height (y-direction)
-            config.geometry.rect_x_center = 0.0;      % Rectangle center X-coordinate
-            config.geometry.rect_y_center = 0.0;      % Rectangle center Y-coordinate
-            % Rectangle needs finer mesh for convergence
-            config.mesh.dist = 0.05;
-        case 'airfoil'
-            % NACA 4-digit series parameters
-            config.geometry.naca_digits = [0, 0, 1, 9];       % NACA airfoil
-            config.geometry.chord_length = 2.3;               % Chord length
-            config.geometry.angle_of_attack = -10;            % Angle of attack in degrees
-            config.geometry.airfoil_x_center = -0.5;          % Airfoil center X-coordinate (leading edge, shifted left)
-            config.geometry.airfoil_y_center = 0.0;           % Airfoil center Y-coordinate
-            config.mesh.dist = 0.05;                          % Need a somewhat finer mesh distribution
-            config.mesh.refine_a1 = 0.02;                     % Mesh refinement parameter A1 (near obstacle)
-            config.mesh.refine_b1 = 0.05;                     % Mesh refinement parameter B1 (near obstacle)
-        otherwise
-            error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle, airfoil', geometry_type);
-    end
+    case 'ellipse'
+      config.geometry.ellipse_a = 0.5;          % Ellipse semi-major axis (x-direction)
+      config.geometry.ellipse_b = 0.4;          % Ellipse semi-minor axis (y-direction)
 
-    %% RBF-FD Algorithm Parameters
-    % Main stencil sizes
-    config.rbf.stencil_size_main = 35;
-    config.rbf.stencil_size_boundary_obstacle = 20;
-    config.rbf.stencil_size_boundary_wall = 15;
-    config.rbf.stencil_size_boundary_outlet = 30;
+    case 'rectangle'
+      config.geometry.rect_width = 1.0;         % Rectangle width (x-direction)
+      config.geometry.rect_height = 0.8;        % Rectangle height (y-direction)
+      config.geometry.rect_x_center = 0.0;      % Rectangle center X-coordinate
+      config.geometry.rect_y_center = 0.0;      % Rectangle center Y-coordinate
+      % Rectangle needs finer mesh for convergence
+      config.mesh.dist = 0.05;
 
-    % RBF orders and polynomial degrees
-    config.rbf.order_main = 28;
-    config.rbf.poly_degree_main = 3;
-    config.rbf.laplacian_order = 3;
+    case 'airfoil'
+      % NACA 4-digit series parameters
+      config.geometry.naca_digits = [0, 0, 1, 9];       % NACA airfoil
+      config.geometry.chord_length = 2.3;               % Chord length
+      config.geometry.angle_of_attack = -10;            % Angle of attack in degrees
+      config.geometry.airfoil_x_center = -0.5;          % Airfoil center X-coordinate (leading edge, shifted left)
+      config.geometry.airfoil_y_center = 0.0;           % Airfoil center Y-coordinate
 
-    config.rbf.order_boundary = 8;
-    config.rbf.poly_degree_boundary = 3;
-    config.rbf.derivative_order = 1;
+      config.mesh.dist = 0.05;                          % Need a somewhat finer mesh distribution
+      config.mesh.refine_a1 = 0.02;                     % Tighter refinement for airfoil stability
+      config.mesh.refine_b1 = 0.05;                     % Tighter refinement for airfoil stability
+      config.simulation.time_step = 5e-3;               % Airfoil needs smaller time step for stability
 
-    config.rbf.order_interpolation_low = 12;
-    config.rbf.poly_degree_interpolation_low = 2;
+    case 'multi'
+      % Multiple obstacles configuration
+      % Default: two cylinders side-by-side vertically
+      config.geometry.obstacles = [ ...
+                                   struct('type', 'cylinder', 'center', [0, 2.5], 'params', struct('radius', 0.5)), ...
+                                   struct('type', 'cylinder', 'center', [0, -2.5], 'params', struct('radius', 0.5)) ...
+                                  ];
 
-    config.rbf.order_interpolation_high = 25;
-    config.rbf.order_interpolation_high_poly = 5;
-    config.rbf.poly_degree_interpolation_high = 3;
+      config.mesh.dist = 0.07;                          % Need a somewhat finer mesh distribution
+      config.simulation.time_step = 5e-3;
 
-    config.rbf.order_near_obstacle = 30;
-    config.rbf.order_near_obstacle_poly = 7;
-    config.rbf.poly_degree_near_obstacle = 4;
+    otherwise
+      error('Unknown geometry type: %s. Supported types: cylinder, ellipse, rectangle, airfoil, multi', geometry_type);
+  end
 
-    config.rbf.order_near_boundary = 17;
-    config.rbf.poly_degree_near_boundary = 2;
+  %% RBF-FD Algorithm Parameters
+  % Main stencil sizes
+  config.rbf.stencil_size_main = 35;
+  config.rbf.stencil_size_boundary_obstacle = 20;
+  config.rbf.stencil_size_boundary_wall = 15;
+  config.rbf.stencil_size_boundary_outlet = 30;
 
-    %% Simulation Parameters
-    config.simulation.reynolds_number = 100;
-    config.simulation.viscosity = 1 / config.simulation.reynolds_number;
-    config.simulation.time_step = 1e-2;
-    config.simulation.num_time_steps = 1000;
-    config.simulation.num_time_steps_ci = 20;
-    config.simulation.random_seed = 42;  % Required for DistMesh reproducibility (uses rand() for rejection method)
-    config.simulation.show_progress = true;  % Display time step progress (disabled in CI)
+  % RBF orders and polynomial degrees
+  config.rbf.order_main = 28;
+  config.rbf.poly_degree_main = 3;
+  config.rbf.laplacian_order = 3;
 
-    % Geometry-specific time step adjustments for stability
-    if strcmp(lower(geometry_type), 'airfoil')
-        config.simulation.time_step = 5e-3;  % Smaller time step for airfoil stability
-    end
+  config.rbf.order_boundary = 8;
+  config.rbf.poly_degree_boundary = 3;
+  config.rbf.derivative_order = 1;
 
-    %% Distance Thresholds for Special Treatment
-    config.distances.x_min = 1;
-    config.distances.x_max = 1;
-    config.distances.y_min = 0.5;
-    config.distances.y_max = 0.5;
+  config.rbf.order_interpolation_low = 12;
+  config.rbf.poly_degree_interpolation_low = 2;
 
-    %% Numerical Scheme Coefficients
-    config.schemes.adams_bashforth_current = 3 / 2;     % 3/2 coefficient for current time step
-    config.schemes.adams_bashforth_previous = 1 / 2;    % 1/2 coefficient for previous time step
-    config.schemes.crank_nicolson = 1 / 2;              % 1/2 coefficient for Crank-Nicolson
+  config.rbf.order_interpolation_high = 25;
+  config.rbf.order_interpolation_high_poly = 5;
+  config.rbf.poly_degree_interpolation_high = 3;
 
-    %% Visualization Parameters
-    config.visualization.scatter_size = 15;
-    config.visualization.plot_tick_y = [-5, 0, 5];
-    config.visualization.plot_tick_x = [-5, 0, 5, 10, 15];
-    config.visualization.color_axis_range = 1e-0;
+  config.rbf.order_near_obstacle = 30;
+  config.rbf.order_near_obstacle_poly = 7;
+  config.rbf.poly_degree_near_obstacle = 4;
+
+  config.rbf.order_near_boundary = 17;
+  config.rbf.poly_degree_near_boundary = 2;
+
+  %% Boundary Distance Thresholds for Special Treatment
+  config.distances.x_min = 1;
+  config.distances.x_max = 1;
+  config.distances.y_min = 0.5;
+  config.distances.y_max = 0.5;
+
+  %% Numerical Scheme Coefficients
+  config.schemes.adams_bashforth_current = 3 / 2;     % 3/2 coefficient for current time step
+  config.schemes.adams_bashforth_previous = 1 / 2;    % 1/2 coefficient for previous time step
+  config.schemes.crank_nicolson = 1 / 2;              % 1/2 coefficient for Crank-Nicolson
+
+  %% Visualization Parameters
+  config.visualization.scatter_size = 15;
+  config.visualization.plot_tick_y = [-5, 0, 5];
+  config.visualization.plot_tick_x = [-5, 0, 5, 10, 15];
+  config.visualization.color_axis_range = 1e-0;
+
+  %% Logging and Debug Parameters
+  % Master debug switch - set to true to enable all debug features
+  debug_master = false;                         % Master switch for all debug features
+
+  % Individual debug settings (controlled by master switch unless overridden)
+  config.logging.enable = debug_master;                % Enable debug logging
+  config.logging.step_frequency = 3;                   % Print diagnostics every N steps
+  config.logging.trace_substeps = debug_master;        % Print substep diagnostics inside fractional step
+  config.logging.snapshot_on_nan = debug_master;       % Save snapshot if NaN detected
+  config.logging.snapshot_dir = 'debug';               % Directory to save debug snapshots
+  config.logging.history_enable = debug_master;        % Track history of diagnostics
+  config.logging.max_nodes_print = 5;                  % Max nodes to print when reporting extremes
+  config.logging.explosion_factor = 50;                % Threshold factor for detecting blow-up across substeps
+
+  % Enhanced stability diagnostics
+  config.logging.stability_analysis = debug_master;    % Enable detailed stability analysis
+  config.logging.cfl_monitoring = debug_master;        % Monitor CFL condition violations
+  config.logging.matrix_conditioning = debug_master;   % Check matrix condition numbers
+  config.logging.boundary_analysis = debug_master;     % Analyze boundary condition issues
+  config.logging.mesh_quality_check = debug_master;    % Check mesh quality metrics
+  config.logging.energy_conservation = debug_master;   % Monitor energy conservation
+  config.logging.mass_conservation = debug_master;     % Monitor mass conservation (divergence)
+  config.logging.velocity_gradients = debug_master;    % Monitor velocity gradient magnitudes
+  config.logging.pressure_analysis = debug_master;     % Analyze pressure field behavior
+
+  % Stability thresholds
+  config.logging.cfl_warning_threshold = 0.8;          % Warn if CFL > this value
+  config.logging.cfl_critical_threshold = 1.5;         % Critical CFL threshold
+  config.logging.velocity_explosion_threshold = 100;  % Velocity magnitude explosion threshold
+  config.logging.pressure_explosion_threshold = 1000; % Pressure explosion threshold
+  config.logging.divergence_warning_threshold = 10;    % Mass conservation warning
+  config.logging.divergence_critical_threshold = 100;  % Mass conservation critical
+  config.logging.condition_number_threshold = 1e12;    % Matrix conditioning threshold
+
+  % Environment override for enabling logging
+  dbg_env = getenv('DEBUG');
+  if ~isempty(dbg_env)
+    debug_enabled = strcmpi(dbg_env, '1') || strcmpi(dbg_env, 'true');
+    config.logging.enable = debug_enabled;
+    config.logging.trace_substeps = debug_enabled;
+    config.logging.snapshot_on_nan = debug_enabled;
+    config.logging.history_enable = debug_enabled;
+    config.logging.stability_analysis = debug_enabled;
+    config.logging.cfl_monitoring = debug_enabled;
+    config.logging.matrix_conditioning = debug_enabled;
+    config.logging.boundary_analysis = debug_enabled;
+    config.logging.mesh_quality_check = debug_enabled;
+    config.logging.energy_conservation = debug_enabled;
+    config.logging.mass_conservation = debug_enabled;
+    config.logging.velocity_gradients = debug_enabled;
+    config.logging.pressure_analysis = debug_enabled;
+  end
 
 end
